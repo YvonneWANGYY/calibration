@@ -297,21 +297,61 @@
       line-height: 1.45;
     }
 
-    .link-list {
+    .resource-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 20px;
+      gap: 16px;
+      margin-top: 22px;
     }
 
-    .link-list a {
+    .resource-card {
+      display: flex;
+      min-height: 172px;
+      flex-direction: column;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: white;
-      padding: 14px;
-      color: var(--blue);
-      font-weight: 750;
+      padding: 18px;
+      color: var(--ink);
       text-decoration: none;
+      box-shadow: 0 10px 22px rgba(20, 33, 43, 0.06);
+      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+    }
+
+    .resource-card:hover,
+    .resource-card:focus-visible {
+      border-color: rgba(36, 87, 167, 0.45);
+      box-shadow: 0 14px 28px rgba(20, 33, 43, 0.1);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .resource-kicker {
+      color: var(--teal);
+      font-size: 0.76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+    }
+
+    .resource-title {
+      display: block;
+      margin-top: 8px;
+      color: var(--ink);
+      font-size: 1.18rem;
+      font-weight: 850;
+      line-height: 1.18;
+    }
+
+    .resource-summary {
+      margin: 10px 0 16px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .resource-action {
+      margin-top: auto;
+      color: var(--blue);
+      font-weight: 850;
     }
 
     footer {
@@ -335,7 +375,7 @@
       .feature-grid,
       .workflow,
       .split,
-      .link-list {
+      .resource-grid {
         grid-template-columns: 1fr;
       }
 
@@ -529,17 +569,32 @@ python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20
         <div class="section-head">
           <div>
             <div class="eyebrow">Reproducibility links</div>
-            <h2>Paper, code artifacts, and launcher recipe.</h2>
+            <h2>Paper and reusable artifacts.</h2>
           </div>
           <p>
             The homepage links directly to the manuscript PDF and to the
             supplementary SAGE launcher artifacts included in this repository.
           </p>
         </div>
-        <div class="link-list">
-          <a href="assets/new_structured_calibration.pdf">Download new_structured_calibration.pdf</a>
-          <a href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json">supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json</a>
-          <a href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py">supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py</a>
+        <div class="resource-grid" aria-label="Reproducibility resources">
+          <a class="resource-card" href="assets/new_structured_calibration.pdf">
+            <span class="resource-kicker">Manuscript</span>
+            <span class="resource-title">Paper PDF</span>
+            <span class="resource-summary">Full project narrative, case-study results, and method framing.</span>
+            <span class="resource-action">Open PDF</span>
+          </a>
+          <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json">
+            <span class="resource-kicker">Configuration</span>
+            <span class="resource-title">SAGE recipe</span>
+            <span class="resource-summary">Checked JSON recipe for the ensemble-MAP 20-iteration SAGE run.</span>
+            <span class="resource-action">View recipe</span>
+          </a>
+          <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py">
+            <span class="resource-kicker">Automation</span>
+            <span class="resource-title">SAGE launcher</span>
+            <span class="resource-summary">Preflighted JSON-to-PBS launcher for reproducible SAGE calibration jobs.</span>
+            <span class="resource-action">View launcher</span>
+          </a>
         </div>
       </div>
     </section>

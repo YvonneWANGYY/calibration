@@ -35,6 +35,17 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
+    def test_reproducibility_links_use_short_resource_cards(self):
+        text = self.index_path.read_text()
+
+        self.assertIn('class="resource-grid"', text)
+        self.assertIn('class="resource-card"', text)
+        self.assertIn('<span class="resource-title">Paper PDF</span>', text)
+        self.assertIn('<span class="resource-title">SAGE recipe</span>', text)
+        self.assertIn('<span class="resource-title">SAGE launcher</span>', text)
+        self.assertNotIn('>supplement/sage_recipe_launcher', text)
+        self.assertNotIn('>Download new_structured_calibration.pdf<', text)
+
     def test_project_page_uses_existing_visual_asset(self):
         text = self.index_path.read_text()
         asset = ROOT / "assets" / "sage8-direct-map-trajectory.png"
