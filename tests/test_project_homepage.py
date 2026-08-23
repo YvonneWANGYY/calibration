@@ -101,6 +101,8 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertNotIn("--submit", launcher_text)
         self.assertNotIn("qsub", launcher_text)
         self.assertIn('"user_edit_notes"', recipe_text)
+        self.assertIn('"edit_before_running"', recipe_text)
+        self.assertIn("Keep scheduler submission outside this JSON", recipe_text)
         self.assertNotIn('"pbs"', recipe_text)
         self.assertNotIn('"nodetype"', recipe_text)
         self.assertNotIn('"ngpus"', recipe_text)

@@ -2,9 +2,13 @@
   "name": "sage8_ensemble_map_20iter",
   "description": "SAGE eight-observable 20-iteration ensemble-MAP active calibration with fixed 20260714 LHS.",
   "user_edit_notes": {
-    "scope": "Edit before running on a different science target, workspace, simulator wrapper, or scheduler.",
-    "paths": "Update target, initial_summary, template, crqsf_root, out_root, and seed_label for your local project.",
-    "scheduler": "This recipe prints the calibration command; write your own scheduler wrapper for PBS, SLURM, or local execution."
+    "scope": "This file is the checked demonstration recipe, not a universal ready-to-run configuration.",
+    "edit_before_running": [
+      "Replace the science target, initial LHS summary, simulator template, and CRQSF root with your local artifacts.",
+      "Replace out_root and seed_label with your run identity.",
+      "Adjust parameter_set, theta_min/theta_max, and strategy controls only when changing the calibration problem.",
+      "Keep scheduler submission outside this JSON; write your own wrapper around the printed command for your local batch system or local execution."
+    ]
   },
   "target": "targets/sage_observational_eightmetric_equal_family_v1.json",
   "initial_summary": "analysis_outputs/sage_observational_eightmetric_sagepaper8_lhs_scale03_50/lhs_sagepaper8_eightmetric_scale03_50_seed20260714_croton2016_loss.csv",
