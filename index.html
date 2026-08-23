@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fully Autonomous Calibration for Astrophysics</title>
+  <meta name="description" content="A project homepage for adaptive parameter-space exploration in astrophysical calibration.">
+  <style>
+    :root {
+      --ink: #14212b;
+      --muted: #5b6670;
+      --paper: #fbfaf7;
+      --panel: #ffffff;
+      --line: #d7ded8;
+      --teal: #0f766e;
+      --blue: #2457a7;
+      --rust: #b6532a;
+      --gold: #b78a21;
+      --shadow: 0 18px 42px rgba(20, 33, 43, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 82vh;
+      display: flex;
+      align-items: center;
+      background-image: url("assets/sage8-proposal-20iter-trajectory-comparison.png");
+      background-size: cover;
+      background-position: center;
+      isolation: isolate;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(251, 250, 247, 0.88);
+      z-index: -1;
+    }
+
+    .hero-inner,
+    .section-inner {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .eyebrow {
+      color: var(--teal);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      max-width: 980px;
+      margin-top: 12px;
+      font-size: clamp(2.4rem, 6vw, 4.9rem);
+    }
+
+    h2 {
+      font-size: clamp(1.85rem, 3.2vw, 3rem);
+    }
+
+    h3 {
+      font-size: 1.12rem;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 22px 0 0;
+      color: #263640;
+      font-size: clamp(1.05rem, 1.6vw, 1.28rem);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border: 1px solid var(--ink);
+      border-radius: 8px;
+      background: var(--ink);
+      color: white;
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    .button.secondary {
+      background: rgba(255, 255, 255, 0.68);
+      color: var(--ink);
+    }
+
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 34px;
+      max-width: 900px;
+    }
+
+    .stat {
+      border: 1px solid rgba(20, 33, 43, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.74);
+      padding: 13px;
+      min-height: 92px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.38rem;
+      line-height: 1.1;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    section {
+      padding: 74px 0;
+    }
+
+    section:nth-of-type(even) {
+      background: #eef3f0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, 0.85fr) minmax(260px, 0.55fr);
+      gap: 28px;
+      align-items: end;
+      margin-bottom: 28px;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .case-grid,
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .card,
+    .callout,
+    .code-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 12px 24px rgba(20, 33, 43, 0.06);
+    }
+
+    .card {
+      padding: 22px;
+      min-height: 214px;
+    }
+
+    .card .tag {
+      display: inline-block;
+      margin-bottom: 14px;
+      color: white;
+      background: var(--blue);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .card:nth-child(2) .tag {
+      background: var(--rust);
+    }
+
+    .card:nth-child(3) .tag {
+      background: var(--teal);
+    }
+
+    .card p,
+    .callout p {
+      color: var(--muted);
+      margin: 12px 0 0;
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .step {
+      min-height: 124px;
+      border-top: 4px solid var(--gold);
+      border-radius: 8px;
+      background: white;
+      padding: 14px;
+      box-shadow: 0 10px 22px rgba(20, 33, 43, 0.06);
+    }
+
+    .step span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+      gap: 24px;
+      align-items: center;
+    }
+
+    .figure-frame {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      box-shadow: var(--shadow);
+    }
+
+    .figure-frame img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: contain;
+      background: #f8faf9;
+    }
+
+    .caption {
+      margin: 0;
+      padding: 11px 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      font-size: 0.9rem;
+    }
+
+    .callout {
+      padding: 24px;
+      border-left: 6px solid var(--teal);
+    }
+
+    .code-panel {
+      overflow: hidden;
+      margin-top: 18px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
+      color: #edf7f3;
+      background: #17242b;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .link-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .link-list a {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      padding: 14px;
+      color: var(--blue);
+      font-weight: 750;
+      text-decoration: none;
+    }
+
+    footer {
+      padding: 34px 0;
+      color: #f4f7f5;
+      background: var(--ink);
+    }
+
+    footer a {
+      color: #dff4ef;
+    }
+
+    @media (max-width: 860px) {
+      .hero {
+        min-height: 88vh;
+      }
+
+      .quick-stats,
+      .section-head,
+      .case-grid,
+      .feature-grid,
+      .workflow,
+      .split,
+      .link-list {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2.35rem;
+      }
+
+      section {
+        padding: 52px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="eyebrow">Adaptive parameter-space exploration</div>
+      <h1>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</h1>
+      <p class="lead">
+        A reusable active-learning calibration framework that learns proposal
+        distributions from completed simulations, selects promising parameter
+        evaluations, and records the run as a reproducible recipe-driven loop.
+      </p>
+      <div class="actions" aria-label="Project links">
+        <a class="button" href="assets/new_structured_calibration.pdf">Paper PDF</a>
+        <a class="button secondary" href="https://github.com/YvonneWANGYY/fully-autonomous-calibration">GitHub repository</a>
+        <a class="button secondary" href="#sage-recipe">SAGE recipe</a>
+      </div>
+      <div class="quick-stats" aria-label="Project summary">
+        <div class="stat"><strong>3</strong><span>case studies spanning Sedov--Taylor, Rotating Cylinder, and local SAGE</span></div>
+        <div class="stat"><strong>8</strong><span>SAGE observational families in the main semi-analytic calibration</span></div>
+        <div class="stat"><strong>20</strong><span>active SAGE evaluations per proposal-strategy branch</span></div>
+        <div class="stat"><strong>0.735</strong><span>best stored SAGE observational R2 in the 20-iteration comparison</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="cases">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Evidence chain</div>
+            <h2>One active-learning engine, three astrophysical calibration surfaces.</h2>
+          </div>
+          <p>
+            The project is framed as a transferable calibration workflow rather
+            than a one-off optimizer for a single simulation.
+          </p>
+        </div>
+        <div class="case-grid">
+          <article class="card">
+            <span class="tag">Sedov--Taylor</span>
+            <h3>Profile-error calibration for AMR controls</h3>
+            <p>
+              The Sedov branch calibrates refinement thresholds that affect
+              physical shock profiles and simulation cost, showing how adaptive
+              search can move beyond fixed manual sweeps.
+            </p>
+          </article>
+          <article class="card">
+            <span class="tag">Rotating Cylinder</span>
+            <h3>Transfer to a second Enzo calibration target</h3>
+            <p>
+              The Rotating Cylinder branch reuses the learned-proposal
+              interface on an angular-momentum conservation task and tests
+              runtime-aware acquisition behavior.
+            </p>
+          </article>
+          <article class="card">
+            <span class="tag">local SAGE</span>
+            <h3>Semi-analytic galaxy-formation calibration</h3>
+            <p>
+              The SAGE branch calibrates eight SAGE-paper scale parameters
+              against a multi-family observational target using the same
+              active-learning orchestration layer.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="workflow">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Autonomous loop</div>
+            <h2>A recipe materializes the run, then the loop advances itself.</h2>
+          </div>
+          <p>
+            The reusable engine combines CRQSF proposal learning, acquisition,
+            simulator execution, and bookkeeping into a closed-loop calibration
+            run after the case-specific recipe is specified.
+          </p>
+        </div>
+        <div class="workflow" aria-label="Calibration workflow">
+          <div class="step"><span>01</span><strong>Recipe</strong><p>Target, bounds, wrapper, resources, and initial design.</p></div>
+          <div class="step"><span>02</span><strong>Preflight</strong><p>Validate paths, resource shape, strategy, and output plan.</p></div>
+          <div class="step"><span>03</span><strong>CRQSF proposal</strong><p>Fit a target-conditioned learned proposal from evaluated rows.</p></div>
+          <div class="step"><span>04</span><strong>Acquisition</strong><p>Select the next parameter vector with ranking, MAP, or sampling.</p></div>
+          <div class="step"><span>05</span><strong>Simulation</strong><p>Run the astrophysical model through the case wrapper.</p></div>
+          <div class="step"><span>06</span><strong>Update</strong><p>Append metrics, manifests, and history for the next iteration.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="sage-recipe">
+      <div class="section-inner split">
+        <div>
+          <div class="eyebrow">SAGE automation highlight</div>
+          <h2>SAGE recipe-driven launcher</h2>
+          <p>
+            The SAGE recipe-driven launcher packages the target JSON, initial
+            LHS summary, parameter range, CRQSF root, acquisition strategy,
+            output naming, and PBS resources into one checked recipe. It
+            replaces the most fragile hard-coded launcher fields with a
+            preflighted JSON-to-PBS path.
+          </p>
+          <div class="code-panel" aria-label="SAGE launcher dry-run command">
+            <pre><code>python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json
+python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json --write-pbs --force</code></pre>
+          </div>
+        </div>
+        <figure class="figure-frame">
+          <img src="assets/sage8-direct-map-trajectory.png" alt="SAGE active-learning trajectory comparing direct sampling and MAP-style proposal selection">
+          <figcaption class="caption">
+            Existing SAGE active-learning trajectory figure reused as a real
+            project visual asset for the homepage.
+          </figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section id="results">
+      <div class="section-inner split">
+        <figure class="figure-frame">
+          <img src="assets/sage8-proposal-20iter-trajectory-comparison.png" alt="Twenty-iteration SAGE proposal strategy comparison">
+          <figcaption class="caption">
+            Twenty-iteration SAGE proposal comparison. The stored job-era
+            summaries are used for the headline observational R2 values.
+          </figcaption>
+        </figure>
+        <div>
+          <div class="eyebrow">Results snapshot</div>
+          <h2>SAGE improves the eight-observable fit while exposing strategy differences.</h2>
+          <p>
+            Across five completed 20-iteration SAGE proposal-strategy runs, the
+            shared best initial LHS point has stored observational R2 of 0.435944.
+            The sample-rank proposal reaches 0.734845, while the ensemble-MAP
+            branch reaches 0.718626. The result supports presenting MAP as a
+            strong upgrade candidate, while keeping sample-rank as a competitive
+            baseline.
+          </p>
+          <div class="feature-grid">
+            <article class="card">
+              <h3>Best active score</h3>
+              <p>Sample-rank proposal reaches stored observational R2 = 0.734845 at iteration 18.</p>
+            </article>
+            <article class="card">
+              <h3>Ensemble MAP</h3>
+              <p>Five-member CRQSF ensemble MAP reaches R2 = 0.718626 at iteration 14.</p>
+            </article>
+            <article class="card">
+              <h3>Initial reference</h3>
+              <p>The shared best initial LHS row has R2 = 0.435944 before active learning.</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="boundary">
+      <div class="section-inner">
+        <div class="callout">
+          <div class="eyebrow">Autonomy boundary</div>
+          <h2>What "fully autonomous" means here</h2>
+          <p>
+            Autonomous means the closed-loop run proceeds after the recipe is specified.
+            It does not mean the system invents the science target, parameter domain, simulator wrapper, PBS resource policy, or initial design.
+            Those are researcher-defined inputs. The contribution is that the
+            subsequent adaptive exploration, proposal fitting, acquisition,
+            simulator dispatch, and run bookkeeping are encapsulated and
+            reproducible.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="reproducibility">
+      <div class="section-inner">
+        <div class="section-head">
+          <div>
+            <div class="eyebrow">Reproducibility links</div>
+            <h2>Paper, code artifacts, and launcher recipe.</h2>
+          </div>
+          <p>
+            The homepage links directly to the manuscript PDF and to the
+            supplementary SAGE launcher artifacts included in this repository.
+          </p>
+        </div>
+        <div class="link-list">
+          <a href="assets/new_structured_calibration.pdf">Download new_structured_calibration.pdf</a>
+          <a href="https://github.com/YvonneWANGYY/fully-autonomous-calibration/blob/main/supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json">supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json</a>
+          <a href="https://github.com/YvonneWANGYY/fully-autonomous-calibration/blob/main/supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py">supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="section-inner">
+      <strong>Fully Autonomous Calibration for Astrophysics</strong>
+      <p>
+        Project repository:
+        <a href="https://github.com/YvonneWANGYY/fully-autonomous-calibration">github.com/YvonneWANGYY/fully-autonomous-calibration</a>
+      </p>
+    </div>
+  </footer>
+</body>
+</html>

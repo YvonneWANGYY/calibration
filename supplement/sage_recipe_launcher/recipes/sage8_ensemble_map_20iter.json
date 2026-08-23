@@ -1,0 +1,40 @@
+{
+  "name": "sage8_ensemble_map_20iter",
+  "description": "SAGE eight-observable 20-iteration ensemble-MAP active calibration with fixed 20260714 LHS.",
+  "target": "targets/sage_observational_eightmetric_equal_family_v1.json",
+  "initial_summary": "analysis_outputs/sage_observational_eightmetric_sagepaper8_lhs_scale03_50/lhs_sagepaper8_eightmetric_scale03_50_seed20260714_croton2016_loss.csv",
+  "expected_mode": "lhs_sagepaper8_eightmetric_scale03_50_seed20260714",
+  "parameter_set": "sage-paper8",
+  "template": "configs/fiducial_sfh_allredshift.par",
+  "crqsf_root": "/data/ivyonne/calibration/crqsf_lhs2_multitune_iter20_add1_splitgrid_n2_p768_seed36_no_sampling_weight",
+  "out_root": "active_learning_runs_observational_eightmetric_sagepaper8_scale03_50_20iter/ensemble_map/lhs_seed20260714_ensemble_map_crqsf_seeds41_45_20iter",
+  "seed_label": "eightmetric_sagepaper8_scale03_50_lhs20260714_ensemble_map_crqsf_seeds41_45_20iter_serious",
+  "loss_kind": "observational",
+  "strategy": "ensemble_map",
+  "max_iters": 20,
+  "start_iter": 0,
+  "num_samples": 1,
+  "proposal_candidates": 64,
+  "theta_min": 0.3,
+  "theta_max": 5.0,
+  "crqsf_seed": 41,
+  "crqsf_ensemble_seeds": [
+    41,
+    42,
+    43,
+    44,
+    45
+  ],
+  "tune_preset": "serious",
+  "beta": 0.5,
+  "pbs": {
+    "job_name": "sage8emap20",
+    "log_path": "pbs_logs/sage8_ensemble_map_20iter.$PBS_JOBID.log",
+    "walltime": "72:00:00",
+    "ncpus": 12,
+    "mpiprocs": 1,
+    "nodetype": "C",
+    "host": "node14",
+    "ngpus": 1
+  }
+}
