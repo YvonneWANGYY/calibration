@@ -38,9 +38,9 @@ acquisition, simulator dispatch, and run bookkeeping.
 
 ## Edit before running
 
-The included SAGE recipe and launcher preserve the exact project configuration
-used for this demonstration. Before reusing them, update the researcher-defined
-inputs:
+The included SAGE recipe and launcher show the structure of the demonstration
+configuration without exposing local workspace paths. Before reusing them,
+update the researcher-defined inputs:
 
 - Science files: `target`, `initial_summary`, `template`, and `crqsf_root`.
 - Output identity: `out_root` and `seed_label`.

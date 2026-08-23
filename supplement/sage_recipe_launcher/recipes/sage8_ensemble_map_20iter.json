@@ -1,6 +1,6 @@
 {
   "name": "sage8_ensemble_map_20iter",
-  "description": "SAGE eight-observable 20-iteration ensemble-MAP active calibration with fixed 20260714 LHS.",
+  "description": "SAGE eight-observable 20-iteration ensemble-MAP active calibration recipe template.",
   "user_edit_notes": {
     "scope": "This file is the checked demonstration recipe, not a universal ready-to-run configuration.",
     "edit_before_running": [
@@ -10,14 +10,14 @@
       "Keep scheduler submission outside this JSON; write your own wrapper around the printed command for your local batch system or local execution."
     ]
   },
-  "target": "targets/sage_observational_eightmetric_equal_family_v1.json",
-  "initial_summary": "analysis_outputs/sage_observational_eightmetric_sagepaper8_lhs_scale03_50/lhs_sagepaper8_eightmetric_scale03_50_seed20260714_croton2016_loss.csv",
-  "expected_mode": "lhs_sagepaper8_eightmetric_scale03_50_seed20260714",
+  "target": "targets/<your_target>.json",
+  "initial_summary": "analysis_outputs/<your_initial_lhs_summary>.csv",
+  "expected_mode": "<your_initial_design_label>",
   "parameter_set": "sage-paper8",
-  "template": "configs/fiducial_sfh_allredshift.par",
-  "crqsf_root": "/data/ivyonne/calibration/crqsf_lhs2_multitune_iter20_add1_splitgrid_n2_p768_seed36_no_sampling_weight",
-  "out_root": "active_learning_runs_observational_eightmetric_sagepaper8_scale03_50_20iter/ensemble_map/lhs_seed20260714_ensemble_map_crqsf_seeds41_45_20iter",
-  "seed_label": "eightmetric_sagepaper8_scale03_50_lhs20260714_ensemble_map_crqsf_seeds41_45_20iter_serious",
+  "template": "configs/<your_simulator_template>.par",
+  "crqsf_root": "<your_crqsf_root>",
+  "out_root": "runs/<your_output_root>",
+  "seed_label": "<your_run_label>",
   "loss_kind": "observational",
   "strategy": "ensemble_map",
   "max_iters": 20,

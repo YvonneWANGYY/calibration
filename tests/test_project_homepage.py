@@ -112,6 +112,19 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("Edit before running", readme_text)
         self.assertIn("write your own scheduler wrapper", readme_text)
 
+    def test_public_sage_recipe_uses_path_placeholders(self):
+        recipe = ROOT / "supplement" / "sage_recipe_launcher" / "recipes" / "sage8_ensemble_map_20iter.json"
+        recipe_text = recipe.read_text()
+
+        self.assertNotIn("/data/ivyonne", recipe_text)
+        self.assertNotIn("active_learning_runs_observational_eightmetric", recipe_text)
+        self.assertNotIn("lhs_sagepaper8_eightmetric_scale03_50_seed20260714", recipe_text)
+        self.assertIn("<your_target>.json", recipe_text)
+        self.assertIn("<your_initial_lhs_summary>.csv", recipe_text)
+        self.assertIn("<your_crqsf_root>", recipe_text)
+        self.assertIn("<your_output_root>", recipe_text)
+        self.assertIn("<your_run_label>", recipe_text)
+
     def test_sage_launcher_supplement_is_included(self):
         launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"
         recipe = ROOT / "supplement" / "sage_recipe_launcher" / "recipes" / "sage8_ensemble_map_20iter.json"
