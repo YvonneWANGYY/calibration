@@ -33,6 +33,7 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
         self.assertIn("python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json", text)
+        self.assertNotIn("--write-pbs", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
     def test_reproducibility_links_use_short_resource_cards(self):
@@ -85,7 +86,7 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("Autonomy boundary", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
-    def test_user_editable_sage_settings_are_annotated(self):
+    def test_scheduler_wrapping_is_left_to_users(self):
         launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"
         recipe = ROOT / "supplement" / "sage_recipe_launcher" / "recipes" / "sage8_ensemble_map_20iter.json"
         index_text = self.index_path.read_text()
@@ -94,12 +95,20 @@ class ProjectHomepageTests(unittest.TestCase):
         launcher_text = launcher.read_text()
         recipe_text = recipe.read_text()
 
-        self.assertIn("USER EDIT REQUIRED", launcher_text)
-        self.assertIn("DEFAULT_PBS is a cluster-specific fallback", launcher_text)
-        self.assertIn("nodetype A/B/C", launcher_text)
+        self.assertNotIn("DEFAULT_PBS", launcher_text)
+        self.assertNotIn("NODETYPE_HOSTS", launcher_text)
+        self.assertNotIn("--write-pbs", launcher_text)
+        self.assertNotIn("--submit", launcher_text)
+        self.assertNotIn("qsub", launcher_text)
         self.assertIn('"user_edit_notes"', recipe_text)
+        self.assertNotIn('"pbs"', recipe_text)
+        self.assertNotIn('"nodetype"', recipe_text)
+        self.assertNotIn('"ngpus"', recipe_text)
         self.assertIn("Edit before running", index_text)
+        self.assertIn("write your own scheduler wrapper", index_text)
+        self.assertNotIn("JSON-to-PBS", index_text)
         self.assertIn("Edit before running", readme_text)
+        self.assertIn("write your own scheduler wrapper", readme_text)
 
     def test_sage_launcher_supplement_is_included(self):
         launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"

@@ -486,8 +486,8 @@
           </p>
         </div>
         <div class="workflow" aria-label="Calibration workflow">
-          <div class="step"><span>01</span><strong>Recipe</strong><p>Target, bounds, wrapper, resources, and initial design.</p></div>
-          <div class="step"><span>02</span><strong>Preflight</strong><p>Validate paths, resource shape, strategy, and output plan.</p></div>
+          <div class="step"><span>01</span><strong>Recipe</strong><p>Target, bounds, wrapper interface, and initial design.</p></div>
+          <div class="step"><span>02</span><strong>Preflight</strong><p>Validate paths, strategy, and output plan.</p></div>
           <div class="step"><span>03</span><strong>CRQSF proposal</strong><p>Fit a target-conditioned learned proposal from evaluated rows.</p></div>
           <div class="step"><span>04</span><strong>Acquisition</strong><p>Select the next parameter vector with ranking, MAP, or sampling.</p></div>
           <div class="step"><span>05</span><strong>Simulation</strong><p>Run the astrophysical model through the case wrapper.</p></div>
@@ -504,18 +504,18 @@
           <p>
             The SAGE recipe-driven launcher packages the target JSON, initial
             LHS summary, parameter range, CRQSF root, acquisition strategy,
-            output naming, and PBS resources into one checked recipe. It
+            and output naming into one checked recipe. It
             replaces the most fragile hard-coded launcher fields with a
-            preflighted JSON-to-PBS path.
+            preflighted recipe-to-command path.
           </p>
           <div class="code-panel" aria-label="SAGE launcher dry-run command">
             <pre><code>python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json
-python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json --write-pbs --force</code></pre>
+# write your own scheduler wrapper around the printed command</code></pre>
           </div>
           <p class="edit-note">
             <strong>Edit before running:</strong> update the target paths,
-            output identity, strategy controls, and PBS resources such as
-            walltime, ncpus, nodetype, host, and ngpus for your local cluster.
+            output identity, and strategy controls; write your own scheduler wrapper
+            for PBS, SLURM, or local execution.
           </p>
         </div>
         <figure class="figure-frame">
@@ -611,7 +611,7 @@ python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20
           <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py">
             <span class="resource-kicker">Automation</span>
             <span class="resource-title">SAGE launcher</span>
-            <span class="resource-summary">Preflighted JSON-to-PBS launcher for reproducible SAGE calibration jobs.</span>
+            <span class="resource-summary">Preflighted recipe-to-command launcher for reproducible SAGE calibration runs.</span>
             <span class="resource-action">View launcher</span>
           </a>
         </div>

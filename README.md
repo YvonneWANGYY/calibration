@@ -43,11 +43,11 @@ used for this demonstration. Before reusing them, update the researcher-defined
 inputs:
 
 - Science files: `target`, `initial_summary`, `template`, and `crqsf_root`.
-- Output identity: `out_root`, `seed_label`, and `job_name`.
+- Output identity: `out_root` and `seed_label`.
 - Parameter controls: `parameter_set`, `theta_min`, `theta_max`, and strategy
   settings when changing the calibration problem.
-- PBS resources: `walltime`, `ncpus`, `mpiprocs`, `nodetype`, `host`, `ngpus`,
-  and `log_path`.
+- Scheduler submission: write your own scheduler wrapper around the printed
+  command for PBS, SLURM, or local execution.
 
 ## Repository Layout
 

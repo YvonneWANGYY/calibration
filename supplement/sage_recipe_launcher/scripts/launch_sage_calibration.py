@@ -5,8 +5,7 @@ import argparse
 import json
 import re
 import shlex
-import subprocess
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping
@@ -14,26 +13,6 @@ from typing import Any, Callable, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = "scripts/run_sage_crqsf_active_learning.py"
-
-# USER EDIT REQUIRED:
-# DEFAULT_PBS is a cluster-specific fallback used only when recipe["pbs"] omits
-# a field. Edit these values, or override them in each recipe, before running on
-# another scheduler. On this cluster, nodetype A/B/C maps to A=node01-node06,
-# B=node07-node13, and C=node14 GPU.
-DEFAULT_PBS = {
-    "walltime": "72:00:00",
-    "ncpus": 12,
-    "mpiprocs": 1,
-    "nodetype": "C",
-    "host": "node14",
-    "ngpus": 1,
-}
-
-NODETYPE_HOSTS = {
-    "A": {f"node{idx:02d}" for idx in range(1, 7)},
-    "B": {f"node{idx:02d}" for idx in range(7, 14)},
-    "C": {"node14"},
-}
 
 STRATEGY_PRESETS: dict[str, dict[str, Any]] = {
     "crqsf_rank": {
@@ -135,11 +114,8 @@ class LaunchPlan:
     recipe: Mapping[str, Any]
     resolved_paths: Mapping[str, str]
     command: list[str]
-    pbs: Mapping[str, Any]
-    pbs_path: Path
     manifest_path: Path
     generated_at: str
-    submitted_job_id: str | None = None
 
     @property
     def command_text(self) -> str:
@@ -178,9 +154,6 @@ def build_launch_plan(
 
     _validate_required_paths(resolved_paths)
 
-    pbs = _pbs_config(recipe, project_root)
-    resolved_paths["pbs_log"] = str(_resolve_path(str(pbs["log_path"]), project_root))
-    pbs_path = _resolve_path(str(pbs.get("path", f"pbs_scripts/auto_{name}.pbs")), project_root)
     manifest_path = Path(resolved_paths["out_root"]) / "launch_manifest.json"
 
     start_iter = _int_value(recipe, preset, "start_iter", 0)
@@ -251,87 +224,22 @@ def build_launch_plan(
         recipe=dict(recipe),
         resolved_paths=resolved_paths,
         command=command,
-        pbs=pbs,
-        pbs_path=pbs_path,
         manifest_path=manifest_path,
         generated_at=now() if now is not None else datetime.now(timezone.utc).isoformat(),
     )
 
 
-def render_pbs(plan: LaunchPlan) -> str:
-    pbs = plan.pbs
-    log_path = plan.resolved_paths["pbs_log"]
-    log_parent = _display_path(str(Path(str(pbs["log_path"])).parent))
-    lines = [
-        "#!/bin/bash",
-        f"#PBS -N {pbs['job_name']}",
-        f"#PBS -l {_select_resource(pbs)}",
-    ]
-    if pbs.get("place"):
-        lines.append(f"#PBS -l place={pbs['place']}")
-    lines.extend(
-        [
-            f"#PBS -l walltime={pbs['walltime']}",
-            "#PBS -j oe",
-            f"#PBS -o {log_path}",
-            "",
-            "set -euo pipefail",
-            "",
-            f"cd {plan.resolved_paths['project_root']}",
-            f"mkdir -p {shlex.quote(log_parent)}",
-            "",
-            'echo "PBS_JOBID=${PBS_JOBID:-unknown}"',
-            'echo "PBS_O_WORKDIR=${PBS_O_WORKDIR:-unknown}"',
-            'echo "HOST=$(hostname)"',
-            'echo "CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-unset}"',
-            "",
-            _render_multiline_command(plan.command),
-            "",
-        ]
-    )
-    return "\n".join(lines)
-
-
-def execute_plan(
-    plan: LaunchPlan,
-    write_pbs: bool = False,
-    submit: bool = False,
-    force: bool = False,
-    submit_runner: Callable[[Path], str] | None = None,
-) -> LaunchPlan:
-    if not write_pbs and not submit:
-        return plan
-
-    _ensure_writable(plan.pbs_path, force)
+def write_manifest(plan: LaunchPlan, force: bool = False) -> None:
     _ensure_writable(plan.manifest_path, force)
-    plan.pbs_path.parent.mkdir(parents=True, exist_ok=True)
-    plan.pbs_path.write_text(render_pbs(plan))
-
-    submitted_job_id = None
-    if submit:
-        runner = submit_runner or submit_pbs
-        submitted_job_id = runner(plan.pbs_path)
-
-    updated = replace(plan, submitted_job_id=submitted_job_id)
-    updated.manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    updated.manifest_path.write_text(json.dumps(_manifest_payload(updated), indent=2, sort_keys=True) + "\n")
-    return updated
-
-
-def submit_pbs(pbs_path: Path) -> str:
-    result = subprocess.run(["qsub", str(pbs_path)], check=True, capture_output=True, text=True)
-    stdout = result.stdout.strip()
-    if not stdout:
-        raise RuntimeError("qsub succeeded but did not return a job ID")
-    return stdout.split()[0]
+    plan.manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    plan.manifest_path.write_text(json.dumps(_manifest_payload(plan), indent=2, sort_keys=True) + "\n")
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--recipe", type=Path, required=True)
     parser.add_argument("--project-root", type=Path, default=ROOT)
-    parser.add_argument("--write-pbs", action="store_true")
-    parser.add_argument("--submit", action="store_true")
+    parser.add_argument("--write-manifest", action="store_true")
     parser.add_argument("--force", action="store_true")
     return parser.parse_args(argv)
 
@@ -340,18 +248,17 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     recipe = load_recipe(args.recipe)
     plan = build_launch_plan(recipe, project_root=args.project_root)
-    if not args.write_pbs and not args.submit:
+    if not args.write_manifest:
         print("DRY RUN")
-        print(f"PBS path: {plan.pbs_path}")
         print(f"Manifest path: {plan.manifest_path}")
+        print("Command for scheduler wrapper:")
         print(plan.command_text)
         return 0
 
-    updated = execute_plan(plan, write_pbs=args.write_pbs, submit=args.submit, force=args.force)
-    print(f"PBS path: {updated.pbs_path}")
-    print(f"Manifest path: {updated.manifest_path}")
-    if updated.submitted_job_id:
-        print(f"Submitted job: {updated.submitted_job_id}")
+    write_manifest(plan, force=args.force)
+    print(f"Manifest path: {plan.manifest_path}")
+    print("Command for scheduler wrapper:")
+    print(plan.command_text)
     return 0
 
 
@@ -361,82 +268,9 @@ def _manifest_payload(plan: LaunchPlan) -> dict[str, Any]:
         "resolved_paths": dict(plan.resolved_paths),
         "command": plan.command,
         "command_text": plan.command_text,
-        "pbs_path": str(plan.pbs_path),
         "manifest_path": str(plan.manifest_path),
         "generated_at": plan.generated_at,
-        "submitted_job_id": plan.submitted_job_id,
     }
-
-
-def _pbs_config(recipe: Mapping[str, Any], project_root: Path) -> dict[str, Any]:
-    name = _required_string(recipe, "name")
-    raw = dict(DEFAULT_PBS)
-    raw.update(dict(recipe.get("pbs") or {}))
-    raw.setdefault("job_name", name[:15])
-    raw.setdefault("log_path", f"pbs_logs/{name}.$PBS_JOBID.log")
-    raw.setdefault("select", 1)
-
-    for key in ("select", "ncpus", "mpiprocs"):
-        raw[key] = _positive_int(raw[key], f"pbs.{key}")
-    if raw.get("ngpus") is not None:
-        raw["ngpus"] = _positive_int(raw["ngpus"], "pbs.ngpus")
-    nodetype = str(raw["nodetype"])
-    if nodetype not in NODETYPE_HOSTS:
-        known = ", ".join(sorted(NODETYPE_HOSTS))
-        raise ValueError(f"pbs.nodetype must be one of: {known}")
-    host = raw.get("host")
-    if host:
-        host = str(host)
-        raw["host"] = host
-        expected_hosts = NODETYPE_HOSTS[nodetype]
-        if host not in expected_hosts:
-            raise ValueError(f"pbs.host {host!r} is inconsistent with nodetype {nodetype}")
-    if nodetype == "C":
-        raw.setdefault("host", "node14")
-        raw.setdefault("ngpus", 1)
-    if not str(raw["job_name"]).strip():
-        raise ValueError("pbs.job_name must be non-empty")
-    if not str(raw["walltime"]).strip():
-        raise ValueError("pbs.walltime must be non-empty")
-    if not str(raw["log_path"]).strip():
-        raise ValueError("pbs.log_path must be non-empty")
-    raw["project_root"] = str(project_root)
-    return raw
-
-
-def _select_resource(pbs: Mapping[str, Any]) -> str:
-    parts = [
-        f"select={pbs['select']}",
-        f"ncpus={pbs['ncpus']}",
-        f"mpiprocs={pbs['mpiprocs']}",
-        f"nodetype={pbs['nodetype']}",
-    ]
-    if pbs.get("host"):
-        parts.append(f"host={pbs['host']}")
-    if pbs.get("ngpus") is not None:
-        parts.append(f"ngpus={pbs['ngpus']}")
-    return ":".join(parts)
-
-
-def _render_multiline_command(command: list[str]) -> str:
-    if len(command) <= 2:
-        return " ".join(shlex.quote(str(part)) for part in command)
-    head = f"{shlex.quote(command[0])} {shlex.quote(command[1])}"
-    segments: list[str] = []
-    idx = 2
-    while idx < len(command):
-        current = command[idx]
-        if current.startswith("--") and idx + 1 < len(command) and not command[idx + 1].startswith("--"):
-            segments.append(f"{shlex.quote(current)} {shlex.quote(command[idx + 1])}")
-            idx += 2
-        else:
-            segments.append(shlex.quote(current))
-            idx += 1
-    lines = [f"{head} \\"]
-    for index, segment in enumerate(segments):
-        suffix = " \\" if index < len(segments) - 1 else ""
-        lines.append(f"  {segment}{suffix}")
-    return "\n".join(lines)
 
 
 def _validate_required_paths(resolved_paths: Mapping[str, str]) -> None:
@@ -474,13 +308,6 @@ def _int_value(recipe: Mapping[str, Any], preset: Mapping[str, Any], key: str, d
 
 def _float_value(recipe: Mapping[str, Any], preset: Mapping[str, Any], key: str, default: float) -> float:
     return float(_value(recipe, preset, key, default))
-
-
-def _positive_int(value: Any, label: str) -> int:
-    parsed = int(value)
-    if parsed <= 0:
-        raise ValueError(f"{label} must be positive")
-    return parsed
 
 
 def _seed_list(value: Any) -> list[int]:
