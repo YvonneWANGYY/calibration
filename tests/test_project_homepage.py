@@ -116,9 +116,11 @@ class ProjectHomepageTests(unittest.TestCase):
         recipe = ROOT / "supplement" / "sage_recipe_launcher" / "recipes" / "sage8_ensemble_map_20iter.json"
         recipe_text = recipe.read_text()
 
-        self.assertNotIn("/data/ivyonne", recipe_text)
-        self.assertNotIn("active_learning_runs_observational_eightmetric", recipe_text)
-        self.assertNotIn("lhs_sagepaper8_eightmetric_scale03_50_seed20260714", recipe_text)
+        private_root_pattern = re.compile(r"/(?:data|home|Users|scratch|tmp)/[A-Za-z0-9_.-]+")
+        self.assertIsNone(private_root_pattern.search(recipe_text))
+        self.assertNotIn("active_learning_runs" + "_", recipe_text)
+        self.assertNotIn("lhs_" + "sagepaper8", recipe_text)
+        self.assertNotRegex(recipe_text, r"seed20\d{6}")
         self.assertIn("<your_target>.json", recipe_text)
         self.assertIn("<your_initial_lhs_summary>.csv", recipe_text)
         self.assertIn("<your_crqsf_root>", recipe_text)
