@@ -85,6 +85,22 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("Autonomy boundary", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
+    def test_user_editable_sage_settings_are_annotated(self):
+        launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"
+        recipe = ROOT / "supplement" / "sage_recipe_launcher" / "recipes" / "sage8_ensemble_map_20iter.json"
+        index_text = self.index_path.read_text()
+        readme_text = self.readme_path.read_text()
+
+        launcher_text = launcher.read_text()
+        recipe_text = recipe.read_text()
+
+        self.assertIn("USER EDIT REQUIRED", launcher_text)
+        self.assertIn("DEFAULT_PBS is a cluster-specific fallback", launcher_text)
+        self.assertIn("nodetype A/B/C", launcher_text)
+        self.assertIn('"user_edit_notes"', recipe_text)
+        self.assertIn("Edit before running", index_text)
+        self.assertIn("Edit before running", readme_text)
+
     def test_sage_launcher_supplement_is_included(self):
         launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"
         recipe = ROOT / "supplement" / "sage_recipe_launcher" / "recipes" / "sage8_ensemble_map_20iter.json"

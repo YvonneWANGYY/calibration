@@ -36,6 +36,19 @@ wrapper, PBS resource policy, or initial design. Those remain researcher-defined
 inputs; the automated contribution is the subsequent proposal fitting,
 acquisition, simulator dispatch, and run bookkeeping.
 
+## Edit before running
+
+The included SAGE recipe and launcher preserve the exact project configuration
+used for this demonstration. Before reusing them, update the researcher-defined
+inputs:
+
+- Science files: `target`, `initial_summary`, `template`, and `crqsf_root`.
+- Output identity: `out_root`, `seed_label`, and `job_name`.
+- Parameter controls: `parameter_set`, `theta_min`, `theta_max`, and strategy
+  settings when changing the calibration problem.
+- PBS resources: `walltime`, `ncpus`, `mpiprocs`, `nodetype`, `host`, `ngpus`,
+  and `log_path`.
+
 ## Repository Layout
 
 - `index.html` - static project homepage for GitHub Pages from repository root.

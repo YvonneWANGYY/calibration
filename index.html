@@ -287,6 +287,20 @@
       margin-top: 18px;
     }
 
+    .edit-note {
+      margin-top: 14px;
+      border-left: 5px solid var(--rust);
+      border-radius: 8px;
+      background: #fff8f4;
+      padding: 13px 15px;
+      color: #5d463b;
+      font-size: 0.94rem;
+    }
+
+    .edit-note strong {
+      color: var(--rust);
+    }
+
     pre {
       margin: 0;
       padding: 18px;
@@ -498,6 +512,11 @@
             <pre><code>python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json
 python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json --write-pbs --force</code></pre>
           </div>
+          <p class="edit-note">
+            <strong>Edit before running:</strong> update the target paths,
+            output identity, strategy controls, and PBS resources such as
+            walltime, ncpus, nodetype, host, and ngpus for your local cluster.
+          </p>
         </div>
         <figure class="figure-frame">
           <img src="assets/sage8-direct-map-trajectory.png" alt="SAGE active-learning trajectory comparing direct sampling and MAP-style proposal selection">

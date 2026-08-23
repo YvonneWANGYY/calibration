@@ -1,6 +1,11 @@
 {
   "name": "sage8_ensemble_map_20iter",
   "description": "SAGE eight-observable 20-iteration ensemble-MAP active calibration with fixed 20260714 LHS.",
+  "user_edit_notes": {
+    "scope": "Edit before running on a different science target, workspace, simulator wrapper, or cluster.",
+    "paths": "Update target, initial_summary, template, crqsf_root, out_root, and seed_label for your local project.",
+    "pbs": "Update walltime, ncpus, mpiprocs, nodetype, host, ngpus, and log_path for your PBS scheduler."
+  },
   "target": "targets/sage_observational_eightmetric_equal_family_v1.json",
   "initial_summary": "analysis_outputs/sage_observational_eightmetric_sagepaper8_lhs_scale03_50/lhs_sagepaper8_eightmetric_scale03_50_seed20260714_croton2016_loss.csv",
   "expected_mode": "lhs_sagepaper8_eightmetric_scale03_50_seed20260714",

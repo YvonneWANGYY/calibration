@@ -15,6 +15,11 @@ from typing import Any, Callable, Mapping
 ROOT = Path(__file__).resolve().parents[1]
 ENGINE = "scripts/run_sage_crqsf_active_learning.py"
 
+# USER EDIT REQUIRED:
+# DEFAULT_PBS is a cluster-specific fallback used only when recipe["pbs"] omits
+# a field. Edit these values, or override them in each recipe, before running on
+# another scheduler. On this cluster, nodetype A/B/C maps to A=node01-node06,
+# B=node07-node13, and C=node14 GPU.
 DEFAULT_PBS = {
     "walltime": "72:00:00",
     "ncpus": 12,
