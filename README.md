@@ -3,18 +3,19 @@
 **Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration**
 
 A recipe-driven active-learning calibration project for astrophysical simulations
-and semi-analytic galaxy-formation models. The workflow learns proposal
-distributions from completed evaluations, selects new parameter vectors, runs the
-case simulator through a wrapper, and records the adaptive loop as reproducible
-artifacts.
+and semi-analytic galaxy-formation models. The generic recipe and launcher are
+the primary public interface; SAGE is the included worked example. The workflow
+learns proposal distributions from completed evaluations, selects new parameter
+vectors, runs the case simulator through a wrapper, and records the adaptive
+loop as reproducible artifacts.
 
 ## Quick Links
 
 - **Project page:** https://YvonneWANGYY.github.io/calibration/
 - **Repository:** https://github.com/YvonneWANGYY/calibration
-- **Paper PDF:** [assets/new_structured_calibration.pdf](assets/new_structured_calibration.pdf)
 - **Generic launcher:** [supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py](supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py)
 - **Generic recipe:** [supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json](supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json)
+- **Paper PDF:** [assets/new_structured_calibration.pdf](assets/new_structured_calibration.pdf)
 - **SAGE launcher:** [supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py](supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py)
 - **SAGE recipe:** [supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json](supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json)
 
@@ -24,13 +25,13 @@ artifacts.
   local SAGE case studies.
 - CRQSF-guided adaptive parameter-space exploration after researcher-defined
   targets, bounds, simulator wrappers, resources, and initial designs are set.
+- A generic recipe and launcher template that documents the reusable
+  calibration interface separately from any one case study.
 - A SAGE eight-observable active-learning comparison that improves the shared
   best initial design from `R2 = 0.435944` to a best active result of
   `R2 = 0.734845` in the stored 20-iteration summaries.
-- A recipe-based launcher that moves brittle SAGE run settings out of
-  hard-coded scripts and into a preflighted JSON configuration.
-- A generic recipe and launcher template that documents the reusable
-  calibration interface separately from the SAGE case study.
+- A SAGE example recipe that moves brittle run settings out of hard-coded
+  scripts and into a preflighted JSON configuration.
 
 ## Autonomy boundary
 
@@ -42,9 +43,10 @@ acquisition, simulator dispatch, and run bookkeeping.
 
 ## Edit before running
 
-The included generic and SAGE recipes show the structure of the demonstration
-configuration without exposing local workspace paths. Before reusing them,
-update the researcher-defined inputs:
+Start from the generic recipe for a new calibration problem. Use the SAGE recipe
+as a concrete example of how a case study fills the same interface without
+exposing local workspace paths. Before reusing them, update the
+researcher-defined inputs:
 
 - Science files: `target`, `initial_summary`, `template`, and `crqsf_root`.
 - Output identity: `out_root` and `seed_label`.
@@ -59,7 +61,7 @@ update the researcher-defined inputs:
 - `assets/` - homepage figures and the current project PDF.
 - `supplement/generic_recipe_launcher/` - generic adaptive-calibration recipe
   and command-materialization launcher.
-- `supplement/sage_recipe_launcher/` - SAGE launcher script and example recipe.
+- `supplement/sage_recipe_launcher/` - SAGE worked-example launcher and recipe.
 - `profile/README-project-card.md` - short card for a GitHub profile README.
 - `tests/test_project_homepage.py` - structural checks for the public bundle.
 

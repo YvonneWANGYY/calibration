@@ -39,6 +39,21 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertNotIn("--write-pbs", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
+    def test_project_page_presents_generic_launcher_as_primary_interface(self):
+        text = self.index_path.read_text()
+
+        self.assertIn("Generic recipe launcher", text)
+        self.assertIn("Worked example", text)
+        self.assertIn(
+            "SAGE is the included example implementation of the generic recipe interface",
+            text,
+        )
+        self.assertLess(
+            text.index("Generic recipe launcher"),
+            text.index("SAGE recipe-driven launcher"),
+        )
+        self.assertNotIn("SAGE automation highlight", text)
+
     def test_reproducibility_links_use_short_resource_cards(self):
         text = self.index_path.read_text()
 
@@ -80,16 +95,23 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
         self.assertIn("https://github.com/YvonneWANGYY/calibration", text)
         self.assertIn("new_structured_calibration.pdf", text)
+        self.assertIn("Generic interface", text)
+        self.assertIn("SAGE example", text)
         self.assertLess(len(text.splitlines()), 45)
 
     def test_readme_is_a_public_project_landing_page(self):
         text = self.readme_path.read_text()
+        normalized_text = re.sub(r"\s+", " ", text)
 
         self.assertIn("Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration", text)
         self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
         self.assertIn("assets/new_structured_calibration.pdf", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
         self.assertIn("supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py", text)
+        self.assertIn(
+            "The generic recipe and launcher are the primary public interface; SAGE is the included worked example.",
+            normalized_text,
+        )
         self.assertIn("Autonomy boundary", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 

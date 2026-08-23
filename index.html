@@ -409,36 +409,75 @@
       <div class="eyebrow">Adaptive parameter-space exploration</div>
       <h1>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</h1>
       <p class="lead">
-        A reusable active-learning calibration framework that learns proposal
-        distributions from completed simulations, selects promising parameter
-        evaluations, and records the run as a reproducible recipe-driven loop.
+        A generic recipe-driven active-learning interface for calibration
+        problems. The reusable launcher materializes target, parameter-space,
+        simulator-wrapper, proposal-model, and output settings into a
+        reproducible adaptive exploration loop.
       </p>
       <div class="actions" aria-label="Project links">
-        <a class="button" href="assets/new_structured_calibration.pdf">Paper PDF</a>
+        <a class="button" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py">Generic launcher</a>
+        <a class="button secondary" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json">Generic recipe</a>
+        <a class="button secondary" href="assets/new_structured_calibration.pdf">Paper PDF</a>
         <a class="button secondary" href="https://github.com/YvonneWANGYY/calibration">GitHub repository</a>
-        <a class="button secondary" href="#generic-recipe">Generic recipe</a>
-        <a class="button secondary" href="#sage-recipe">SAGE recipe</a>
+        <a class="button secondary" href="#sage-recipe">SAGE example</a>
       </div>
       <div class="quick-stats" aria-label="Project summary">
-        <div class="stat"><strong>3</strong><span>case studies spanning Sedov--Taylor, Rotating Cylinder, and local SAGE</span></div>
+        <div class="stat"><strong>1</strong><span>generic recipe interface for target, bounds, wrapper, proposal, and outputs</span></div>
+        <div class="stat"><strong>3</strong><span>worked examples spanning Sedov--Taylor, Rotating Cylinder, and local SAGE</span></div>
         <div class="stat"><strong>8</strong><span>SAGE observational families in the main semi-analytic calibration</span></div>
-        <div class="stat"><strong>20</strong><span>active SAGE evaluations per proposal-strategy branch</span></div>
-        <div class="stat"><strong>0.735</strong><span>best stored SAGE observational R2 in the 20-iteration comparison</span></div>
+        <div class="stat"><strong>0.735</strong><span>best stored SAGE observational R2 in the worked example comparison</span></div>
       </div>
     </div>
   </header>
 
   <main>
+    <section id="generic-recipe">
+      <div class="section-inner split">
+        <div>
+          <div class="eyebrow">Primary public interface</div>
+          <h2>Generic recipe launcher</h2>
+          <p>
+            The generic launcher is the main reusable artifact on this GitHub
+            Pages homepage. A recipe declares the science target, parameter
+            space, initial design, simulator wrapper, proposal model, run
+            controls, and output identity, then the launcher materializes a
+            dry-run command and optional manifest that can be wrapped by the
+            user's own local scheduler.
+          </p>
+          <div class="code-panel" aria-label="Generic launcher dry-run command">
+            <pre><code>python scripts/launch_adaptive_calibration.py --recipe recipes/adaptive_calibration_template.json
+# write your own scheduler wrapper around the printed command</code></pre>
+          </div>
+          <p class="edit-note">
+            <strong>Edit before running:</strong> replace the target file,
+            parameter bounds, simulator wrapper, proposal-model root, and
+            output label with your own calibration artifacts.
+          </p>
+        </div>
+        <div class="callout">
+          <div class="eyebrow">What users provide</div>
+          <h2>Target, bounds, wrapper, and resources stay explicit.</h2>
+          <p>
+            This template makes the automation boundary visible: it standardizes
+            the recipe-to-command interface while leaving the scientific target,
+            simulator integration, initial design, and batch-system submission
+            as researcher-defined inputs.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section id="cases">
       <div class="section-inner">
         <div class="section-head">
           <div>
-            <div class="eyebrow">Evidence chain</div>
-            <h2>One active-learning engine, three astrophysical calibration surfaces.</h2>
+            <div class="eyebrow">Worked examples</div>
+            <h2>One generic interface, three astrophysical calibration surfaces.</h2>
           </div>
           <p>
-            The project is framed as a transferable calibration workflow rather
-            than a one-off optimizer for a single simulation.
+            The examples show how the same adaptive-calibration contract can be
+            instantiated for different scientific targets and simulator
+            wrappers.
           </p>
         </div>
         <div class="case-grid">
@@ -464,9 +503,9 @@
             <span class="tag">local SAGE</span>
             <h3>Semi-analytic galaxy-formation calibration</h3>
             <p>
-              The SAGE branch calibrates eight SAGE-paper scale parameters
-              against a multi-family observational target using the same
-              active-learning orchestration layer.
+              The SAGE branch is the included worked example: eight SAGE-paper
+              scale parameters are calibrated against a multi-family
+              observational target using the generic orchestration layer.
             </p>
           </article>
         </div>
@@ -497,53 +536,16 @@
       </div>
     </section>
 
-    <section id="generic-recipe">
-      <div class="section-inner split">
-        <div>
-          <div class="eyebrow">Reusable interface</div>
-          <h2>Generic recipe launcher</h2>
-          <p>
-            The generic launcher separates the reusable calibration contract
-            from the SAGE case study. A recipe declares the science target,
-            parameter space, initial design, simulator wrapper, proposal model,
-            run controls, and output identity, then the launcher materializes a
-            dry-run command and optional manifest that can be wrapped by the
-            user's own local scheduler.
-          </p>
-          <div class="code-panel" aria-label="Generic launcher dry-run command">
-            <pre><code>python scripts/launch_adaptive_calibration.py --recipe recipes/adaptive_calibration_template.json
-# write your own scheduler wrapper around the printed command</code></pre>
-          </div>
-          <p class="edit-note">
-            <strong>Edit before running:</strong> replace the target file,
-            parameter bounds, simulator wrapper, proposal-model root, and
-            output label with your own calibration artifacts.
-          </p>
-        </div>
-        <div class="callout">
-          <div class="eyebrow">What users provide</div>
-          <h2>Target, bounds, wrapper, and resources stay explicit.</h2>
-          <p>
-            This template makes the automation boundary visible: it standardizes
-            the recipe-to-command interface while leaving the scientific target,
-            simulator integration, initial design, and batch-system submission
-            as researcher-defined inputs.
-          </p>
-        </div>
-      </div>
-    </section>
-
     <section id="sage-recipe">
       <div class="section-inner split">
         <div>
-          <div class="eyebrow">SAGE automation highlight</div>
+          <div class="eyebrow">Worked example</div>
           <h2>SAGE recipe-driven launcher</h2>
           <p>
-            The SAGE recipe-driven launcher packages the target JSON, initial
-            LHS summary, parameter range, CRQSF root, acquisition strategy,
-            and output naming into one editable recipe template. It
-            replaces the most fragile hard-coded launcher fields with a
-            preflighted recipe-to-command path.
+            SAGE is the included example implementation of the generic recipe interface.
+            Its recipe packages the target JSON, initial LHS summary,
+            parameter range, CRQSF root, acquisition strategy, and output naming
+            into one editable case-study template.
           </p>
           <div class="code-panel" aria-label="SAGE launcher dry-run command">
             <pre><code>python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json
@@ -629,8 +631,8 @@
           </div>
           <p>
             The homepage links directly to the manuscript PDF and to the
-            supplementary generic and SAGE launcher artifacts included in this
-            repository.
+            supplementary generic launcher artifacts first, with SAGE included
+            as the worked example.
           </p>
         </div>
         <div class="resource-grid" aria-label="Reproducibility resources">
