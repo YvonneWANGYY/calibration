@@ -13,6 +13,8 @@ artifacts.
 - **Project page:** https://YvonneWANGYY.github.io/calibration/
 - **Repository:** https://github.com/YvonneWANGYY/calibration
 - **Paper PDF:** [assets/new_structured_calibration.pdf](assets/new_structured_calibration.pdf)
+- **Generic launcher:** [supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py](supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py)
+- **Generic recipe:** [supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json](supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json)
 - **SAGE launcher:** [supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py](supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py)
 - **SAGE recipe:** [supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json](supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json)
 
@@ -27,6 +29,8 @@ artifacts.
   `R2 = 0.734845` in the stored 20-iteration summaries.
 - A recipe-based launcher that moves brittle SAGE run settings out of
   hard-coded scripts and into a preflighted JSON configuration.
+- A generic recipe and launcher template that documents the reusable
+  calibration interface separately from the SAGE case study.
 
 ## Autonomy boundary
 
@@ -38,7 +42,7 @@ acquisition, simulator dispatch, and run bookkeeping.
 
 ## Edit before running
 
-The included SAGE recipe and launcher show the structure of the demonstration
+The included generic and SAGE recipes show the structure of the demonstration
 configuration without exposing local workspace paths. Before reusing them,
 update the researcher-defined inputs:
 
@@ -53,6 +57,8 @@ update the researcher-defined inputs:
 
 - `index.html` - static project homepage for GitHub Pages from repository root.
 - `assets/` - homepage figures and the current project PDF.
+- `supplement/generic_recipe_launcher/` - generic adaptive-calibration recipe
+  and command-materialization launcher.
 - `supplement/sage_recipe_launcher/` - SAGE launcher script and example recipe.
 - `profile/README-project-card.md` - short card for a GitHub profile README.
 - `tests/test_project_homepage.py` - structural checks for the public bundle.
@@ -61,6 +67,7 @@ update the researcher-defined inputs:
 
 ```bash
 python -m unittest discover -s tests
+python -m py_compile supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py
 python -m py_compile supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py
 ```
 

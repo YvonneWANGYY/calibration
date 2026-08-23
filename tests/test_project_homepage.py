@@ -33,6 +33,9 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
         self.assertIn("python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json", text)
+        self.assertIn("supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json", text)
+        self.assertIn("supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py", text)
+        self.assertIn("python scripts/launch_adaptive_calibration.py --recipe recipes/adaptive_calibration_template.json", text)
         self.assertNotIn("--write-pbs", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
@@ -44,7 +47,10 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn('<span class="resource-title">Paper PDF</span>', text)
         self.assertIn('<span class="resource-title">SAGE recipe</span>', text)
         self.assertIn('<span class="resource-title">SAGE launcher</span>', text)
+        self.assertIn('<span class="resource-title">Generic recipe</span>', text)
+        self.assertIn('<span class="resource-title">Generic launcher</span>', text)
         self.assertNotIn('>supplement/sage_recipe_launcher', text)
+        self.assertNotIn('>supplement/generic_recipe_launcher', text)
         self.assertNotIn('>Download new_structured_calibration.pdf<', text)
 
     def test_project_page_uses_existing_visual_asset(self):
@@ -83,6 +89,7 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
         self.assertIn("assets/new_structured_calibration.pdf", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
+        self.assertIn("supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py", text)
         self.assertIn("Autonomy boundary", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
@@ -135,6 +142,36 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertTrue(recipe.exists(), f"missing SAGE recipe supplement: {recipe}")
         self.assertIn("STRATEGY_PRESETS", launcher.read_text())
         self.assertIn('"strategy": "ensemble_map"', recipe.read_text())
+
+    def test_generic_recipe_launcher_supplement_is_included(self):
+        launcher = ROOT / "supplement" / "generic_recipe_launcher" / "scripts" / "launch_adaptive_calibration.py"
+        recipe = ROOT / "supplement" / "generic_recipe_launcher" / "recipes" / "adaptive_calibration_template.json"
+
+        self.assertTrue(launcher.exists(), f"missing generic launcher supplement: {launcher}")
+        self.assertTrue(recipe.exists(), f"missing generic recipe supplement: {recipe}")
+
+        launcher_text = launcher.read_text()
+        recipe_text = recipe.read_text()
+        private_root_pattern = re.compile(r"/(?:data|home|Users|scratch|tmp)/[A-Za-z0-9_.-]+")
+
+        self.assertIn("def build_launch_plan", launcher_text)
+        self.assertIn("--write-manifest", launcher_text)
+        self.assertNotIn("qsub", launcher_text)
+        self.assertNotIn("DEFAULT_PBS", launcher_text)
+        self.assertNotIn("SAGE", launcher_text)
+        self.assertIsNone(private_root_pattern.search(launcher_text))
+
+        self.assertIn('"parameter_space"', recipe_text)
+        self.assertIn('"simulator"', recipe_text)
+        self.assertIn('"proposal_model"', recipe_text)
+        self.assertIn('"scheduler"', recipe_text)
+        self.assertIn("<your_adaptive_calibration_engine>.py", recipe_text)
+        self.assertIn("<parameter_1>", recipe_text)
+        self.assertNotIn("SAGE", recipe_text)
+        self.assertNotIn('"pbs"', recipe_text)
+        self.assertNotIn('"nodetype"', recipe_text)
+        self.assertNotIn('"ngpus"', recipe_text)
+        self.assertIsNone(private_root_pattern.search(recipe_text))
 
 
 if __name__ == "__main__":

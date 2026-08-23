@@ -416,6 +416,7 @@
       <div class="actions" aria-label="Project links">
         <a class="button" href="assets/new_structured_calibration.pdf">Paper PDF</a>
         <a class="button secondary" href="https://github.com/YvonneWANGYY/calibration">GitHub repository</a>
+        <a class="button secondary" href="#generic-recipe">Generic recipe</a>
         <a class="button secondary" href="#sage-recipe">SAGE recipe</a>
       </div>
       <div class="quick-stats" aria-label="Project summary">
@@ -492,6 +493,42 @@
           <div class="step"><span>04</span><strong>Acquisition</strong><p>Select the next parameter vector with ranking, MAP, or sampling.</p></div>
           <div class="step"><span>05</span><strong>Simulation</strong><p>Run the astrophysical model through the case wrapper.</p></div>
           <div class="step"><span>06</span><strong>Update</strong><p>Append metrics, manifests, and history for the next iteration.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="generic-recipe">
+      <div class="section-inner split">
+        <div>
+          <div class="eyebrow">Reusable interface</div>
+          <h2>Generic recipe launcher</h2>
+          <p>
+            The generic launcher separates the reusable calibration contract
+            from the SAGE case study. A recipe declares the science target,
+            parameter space, initial design, simulator wrapper, proposal model,
+            run controls, and output identity, then the launcher materializes a
+            dry-run command and optional manifest that can be wrapped by the
+            user's own local scheduler.
+          </p>
+          <div class="code-panel" aria-label="Generic launcher dry-run command">
+            <pre><code>python scripts/launch_adaptive_calibration.py --recipe recipes/adaptive_calibration_template.json
+# write your own scheduler wrapper around the printed command</code></pre>
+          </div>
+          <p class="edit-note">
+            <strong>Edit before running:</strong> replace the target file,
+            parameter bounds, simulator wrapper, proposal-model root, and
+            output label with your own calibration artifacts.
+          </p>
+        </div>
+        <div class="callout">
+          <div class="eyebrow">What users provide</div>
+          <h2>Target, bounds, wrapper, and resources stay explicit.</h2>
+          <p>
+            This template makes the automation boundary visible: it standardizes
+            the recipe-to-command interface while leaving the scientific target,
+            simulator integration, initial design, and batch-system submission
+            as researcher-defined inputs.
+          </p>
         </div>
       </div>
     </section>
@@ -592,7 +629,8 @@
           </div>
           <p>
             The homepage links directly to the manuscript PDF and to the
-            supplementary SAGE launcher artifacts included in this repository.
+            supplementary generic and SAGE launcher artifacts included in this
+            repository.
           </p>
         </div>
         <div class="resource-grid" aria-label="Reproducibility resources">
@@ -601,6 +639,18 @@
             <span class="resource-title">Paper PDF</span>
             <span class="resource-summary">Full project narrative, case-study results, and method framing.</span>
             <span class="resource-action">Open PDF</span>
+          </a>
+          <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json">
+            <span class="resource-kicker">Configuration</span>
+            <span class="resource-title">Generic recipe</span>
+            <span class="resource-summary">Reusable JSON template for defining target, parameter space, wrapper, and outputs.</span>
+            <span class="resource-action">View recipe</span>
+          </a>
+          <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py">
+            <span class="resource-kicker">Automation</span>
+            <span class="resource-title">Generic launcher</span>
+            <span class="resource-summary">Dry-run command and optional manifest generator for adaptive calibration recipes.</span>
+            <span class="resource-action">View launcher</span>
           </a>
           <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json">
             <span class="resource-kicker">Configuration</span>
