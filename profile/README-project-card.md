@@ -4,9 +4,9 @@ Adaptive parameter-space exploration for astrophysical calibration, with a
 recipe-driven active-learning loop demonstrated on Sedov--Taylor, Rotating
 Cylinder, and local SAGE.
 
-- **Project page:** https://YvonneWANGYY.github.io/fully-autonomous-calibration/
-- **Repository:** https://github.com/YvonneWANGYY/fully-autonomous-calibration
-- **Paper PDF:** https://YvonneWANGYY.github.io/fully-autonomous-calibration/assets/new_structured_calibration.pdf
+- **Project page:** https://YvonneWANGYY.github.io/calibration/
+- **Repository:** https://github.com/YvonneWANGYY/calibration
+- **Paper PDF:** https://YvonneWANGYY.github.io/calibration/assets/new_structured_calibration.pdf
 - **SAGE automation:** `supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py`
 
 Highlights:

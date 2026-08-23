@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 class ProjectHomepageTests(unittest.TestCase):
     def setUp(self):
         self.index_path = ROOT / "index.html"
+        self.readme_path = ROOT / "README.md"
         self.profile_path = ROOT / "profile" / "README-project-card.md"
 
     def test_project_page_has_required_research_claims(self):
@@ -28,9 +29,11 @@ class ProjectHomepageTests(unittest.TestCase):
         text = self.index_path.read_text()
 
         self.assertIn("new_structured_calibration.pdf", text)
+        self.assertIn("https://github.com/YvonneWANGYY/calibration", text)
         self.assertIn("supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
         self.assertIn("python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json", text)
+        self.assertNotIn("fully-autonomous-calibration", text)
 
     def test_project_page_uses_existing_visual_asset(self):
         text = self.index_path.read_text()
@@ -56,10 +59,20 @@ class ProjectHomepageTests(unittest.TestCase):
         text = self.profile_path.read_text()
 
         self.assertIn("Fully Autonomous Calibration for Astrophysics", text)
-        self.assertIn("https://YvonneWANGYY.github.io/fully-autonomous-calibration/", text)
-        self.assertIn("https://github.com/YvonneWANGYY/fully-autonomous-calibration", text)
+        self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
+        self.assertIn("https://github.com/YvonneWANGYY/calibration", text)
         self.assertIn("new_structured_calibration.pdf", text)
         self.assertLess(len(text.splitlines()), 45)
+
+    def test_readme_is_a_public_project_landing_page(self):
+        text = self.readme_path.read_text()
+
+        self.assertIn("Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration", text)
+        self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
+        self.assertIn("assets/new_structured_calibration.pdf", text)
+        self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
+        self.assertIn("Autonomy boundary", text)
+        self.assertNotIn("fully-autonomous-calibration", text)
 
     def test_sage_launcher_supplement_is_included(self):
         launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"
