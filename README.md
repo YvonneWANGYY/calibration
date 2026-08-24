@@ -13,6 +13,8 @@ loop as reproducible artifacts.
 
 - **Project page:** https://YvonneWANGYY.github.io/calibration/
 - **Repository:** https://github.com/YvonneWANGYY/calibration
+- **Local recommendation library:** [`src/autocalibration`](src/autocalibration)
+- **SAGE-like notebook:** [notebooks/sage_like_recommendation_loop.ipynb](notebooks/sage_like_recommendation_loop.ipynb)
 - **Generic launcher:** [supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py](supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py)
 - **Generic recipe:** [supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json](supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json)
 - **Paper PDF:** [assets/new_structured_calibration.pdf](assets/new_structured_calibration.pdf)
@@ -27,6 +29,9 @@ loop as reproducible artifacts.
   targets, bounds, simulator wrappers, resources, and initial designs are set.
 - A generic recipe and launcher template that documents the reusable
   calibration interface separately from any one case study.
+- A local recommendation loop that can return Cold-start LHS designs when no
+  initial metrics exist, then continue from user-provided CSV, JSON, or optional
+  HDF5 metrics files.
 - A SAGE eight-observable active-learning comparison that improves the shared
   best initial design from `R2 = 0.435944` to a best active result of
   `R2 = 0.734845` in the stored 20-iteration summaries.
@@ -55,10 +60,52 @@ researcher-defined inputs:
 - Scheduler submission: write your own scheduler wrapper around the printed
   command for PBS, SLURM, or local execution.
 
+## Local Recommendation Loop
+
+The lightweight library in `src/autocalibration` supports the core manual loop:
+
+1. Define parameters and ranges.
+2. Load a target profile from JSON.
+3. If no metrics exist, request `n` Cold-start LHS recommendations.
+4. Run those parameter vectors in your simulator or model.
+5. Add new metrics from CSV, JSON, or optional HDF5.
+6. Request the next recommendations until you stop.
+
+```python
+from autocalibration import AdaptiveCalibrationSession, ParameterSpec
+
+parameters = [
+    ParameterSpec("SfrEfficiency", 0.1, 1.0),
+    ParameterSpec("FeedbackReheatingEpsilon", 0.5, 5.0),
+]
+
+session = AdaptiveCalibrationSession.from_files(
+    parameters=parameters,
+    target_profile="examples/sage_like_target_profile.json",
+)
+initial_runs = session.recommend(n=4, seed=1)
+
+session.add_observations_from_file(
+    "examples/sage_like_initial_metrics.csv",
+    metric_columns=["stellar_mass_density", "gas_fraction"],
+)
+next_runs = session.recommend(n=2, seed=5)
+```
+
+The notebook [notebooks/sage_like_recommendation_loop.ipynb](notebooks/sage_like_recommendation_loop.ipynb)
+walks through this SAGE-like local smoke test using
+[examples/sage_like_initial_metrics.csv](examples/sage_like_initial_metrics.csv)
+and [examples/sage_like_target_profile.json](examples/sage_like_target_profile.json).
+HDF5 metrics are supported through explicit dataset paths when `h5py` is installed.
+
 ## Repository Layout
 
 - `index.html` - static project homepage for GitHub Pages from repository root.
 - `assets/` - homepage figures and the current project PDF.
+- `src/autocalibration/` - lightweight local recommendation library.
+- `examples/` - SAGE-like CSV/JSON files for the local recommendation loop.
+- `notebooks/sage_like_recommendation_loop.ipynb` - notebook smoke test for
+  Cold-start LHS and iterative recommendations.
 - `supplement/generic_recipe_launcher/` - generic adaptive-calibration recipe
   and command-materialization launcher.
 - `supplement/sage_recipe_launcher/` - SAGE worked-example launcher and recipe.
@@ -69,6 +116,7 @@ researcher-defined inputs:
 
 ```bash
 python -m unittest discover -s tests
+python -m py_compile src/autocalibration/*.py
 python -m py_compile supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py
 python -m py_compile supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py
 ```

@@ -512,6 +512,41 @@
       </div>
     </section>
 
+    <section id="local-loop">
+      <div class="section-inner split">
+        <div>
+          <div class="eyebrow">Local recommendation loop</div>
+          <h2>Cold-start LHS, then iterative recommendations from metrics files.</h2>
+          <p>
+            The lightweight library in <code>src/autocalibration</code> lets a
+            user start with only parameters, ranges, and a target profile. If no
+            initial metrics exist, it returns the requested number of Cold-start
+            LHS parameter vectors; after the user runs simulations, CSV, JSON,
+            or optional HDF5 metrics files can be added for the next adaptive
+            recommendations.
+          </p>
+          <div class="code-panel" aria-label="Local recommendation loop code">
+            <pre><code>session = AdaptiveCalibrationSession.from_files(
+    parameters=parameters,
+    target_profile="examples/sage_like_target_profile.json",
+)
+initial_runs = session.recommend(n=4, seed=1)
+session.add_observations_from_file("examples/sage_like_initial_metrics.csv")
+next_runs = session.recommend(n=2, seed=5)</code></pre>
+          </div>
+        </div>
+        <div class="callout">
+          <div class="eyebrow">Notebook smoke test</div>
+          <h2>No SAGE install or cluster scheduler required.</h2>
+          <p>
+            The notebook <code>notebooks/sage_like_recommendation_loop.ipynb</code>
+            demonstrates the SAGE-like manual loop with example CSV and JSON
+            inputs, while keeping actual simulator execution under user control.
+          </p>
+        </div>
+      </div>
+    </section>
+
     <section id="workflow">
       <div class="section-inner">
         <div class="section-head">
@@ -653,6 +688,18 @@
             <span class="resource-title">Generic launcher</span>
             <span class="resource-summary">Dry-run command and optional manifest generator for adaptive calibration recipes.</span>
             <span class="resource-action">View launcher</span>
+          </a>
+          <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/tree/main/src/autocalibration">
+            <span class="resource-kicker">Library</span>
+            <span class="resource-title">Local loop</span>
+            <span class="resource-summary">Cold-start LHS and iterative recommendations from CSV, JSON, or optional HDF5 metrics.</span>
+            <span class="resource-action">View src/autocalibration</span>
+          </a>
+          <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/notebooks/sage_like_recommendation_loop.ipynb">
+            <span class="resource-kicker">Notebook</span>
+            <span class="resource-title">Smoke test</span>
+            <span class="resource-summary">SAGE-like local loop using example target and metrics files.</span>
+            <span class="resource-action">Open notebook</span>
           </a>
           <a class="resource-card" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json">
             <span class="resource-kicker">Configuration</span>

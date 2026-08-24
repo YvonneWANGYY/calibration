@@ -36,6 +36,8 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json", text)
         self.assertIn("supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py", text)
         self.assertIn("python scripts/launch_adaptive_calibration.py --recipe recipes/adaptive_calibration_template.json", text)
+        self.assertIn("src/autocalibration", text)
+        self.assertIn("notebooks/sage_like_recommendation_loop.ipynb", text)
         self.assertNotIn("--write-pbs", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
@@ -108,12 +110,25 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("assets/new_structured_calibration.pdf", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
         self.assertIn("supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py", text)
+        self.assertIn("src/autocalibration", text)
+        self.assertIn("notebooks/sage_like_recommendation_loop.ipynb", text)
         self.assertIn(
             "The generic recipe and launcher are the primary public interface; SAGE is the included worked example.",
             normalized_text,
         )
         self.assertIn("Autonomy boundary", text)
         self.assertNotIn("fully-autonomous-calibration", text)
+
+    def test_library_and_notebook_examples_are_publicly_linked(self):
+        index_text = self.index_path.read_text()
+        readme_text = self.readme_path.read_text()
+
+        self.assertIn("Local recommendation loop", index_text)
+        self.assertIn("Cold-start LHS", index_text)
+        self.assertIn("src/autocalibration", index_text)
+        self.assertIn("notebooks/sage_like_recommendation_loop.ipynb", index_text)
+        self.assertIn("examples/sage_like_initial_metrics.csv", readme_text)
+        self.assertIn("examples/sage_like_target_profile.json", readme_text)
 
     def test_scheduler_wrapping_is_left_to_users(self):
         launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"
