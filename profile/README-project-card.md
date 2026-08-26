@@ -6,7 +6,7 @@ and local SAGE.
 
 - **Project page:** https://YvonneWANGYY.github.io/calibration/
 - **Repository:** https://github.com/YvonneWANGYY/calibration
-- **Paper PDF:** https://YvonneWANGYY.github.io/calibration/assets/new_structured_calibration.pdf
+- **Paper status:** Paper in prep
 - **Generic interface:** `supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py`
 - **SAGE example:** `supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py`
 

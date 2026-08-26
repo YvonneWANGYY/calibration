@@ -17,7 +17,7 @@ loop as reproducible artifacts.
 - **SAGE-like notebook:** [notebooks/sage_like_recommendation_loop.ipynb](notebooks/sage_like_recommendation_loop.ipynb)
 - **Generic launcher:** [supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py](supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py)
 - **Generic recipe:** [supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json](supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json)
-- **Paper PDF:** [assets/new_structured_calibration.pdf](assets/new_structured_calibration.pdf)
+- **Paper status:** Paper in prep
 - **SAGE launcher:** [supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py](supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py)
 - **SAGE recipe:** [supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json](supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json)
 
@@ -101,7 +101,7 @@ HDF5 metrics are supported through explicit dataset paths when `h5py` is install
 ## Repository Layout
 
 - `index.html` - static project homepage for GitHub Pages from repository root.
-- `assets/` - homepage figures and the current project PDF.
+- `assets/` - homepage figures and project visual materials.
 - `src/autocalibration/` - lightweight local recommendation library.
 - `examples/` - SAGE-like CSV/JSON files for the local recommendation loop.
 - `notebooks/sage_like_recommendation_loop.ipynb` - notebook smoke test for

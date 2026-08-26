@@ -28,7 +28,6 @@ class ProjectHomepageTests(unittest.TestCase):
     def test_project_page_links_to_reproducibility_artifacts(self):
         text = self.index_path.read_text()
 
-        self.assertIn("new_structured_calibration.pdf", text)
         self.assertIn("https://github.com/YvonneWANGYY/calibration", text)
         self.assertIn("supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
@@ -38,6 +37,8 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("python scripts/launch_adaptive_calibration.py --recipe recipes/adaptive_calibration_template.json", text)
         self.assertIn("src/autocalibration", text)
         self.assertIn("notebooks/sage_like_recommendation_loop.ipynb", text)
+        self.assertIn("Paper in prep", text)
+        self.assertNotIn("assets/new_structured_calibration.pdf", text)
         self.assertNotIn("--write-pbs", text)
         self.assertNotIn("fully-autonomous-calibration", text)
 
@@ -61,7 +62,7 @@ class ProjectHomepageTests(unittest.TestCase):
 
         self.assertIn('class="resource-grid"', text)
         self.assertIn('class="resource-card"', text)
-        self.assertIn('<span class="resource-title">Paper PDF</span>', text)
+        self.assertIn('<span class="resource-title">Paper in prep</span>', text)
         self.assertIn('<span class="resource-title">SAGE recipe</span>', text)
         self.assertIn('<span class="resource-title">SAGE launcher</span>', text)
         self.assertIn('<span class="resource-title">Generic recipe</span>', text)
@@ -96,7 +97,8 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("Fully Autonomous Calibration for Astrophysics", text)
         self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
         self.assertIn("https://github.com/YvonneWANGYY/calibration", text)
-        self.assertIn("new_structured_calibration.pdf", text)
+        self.assertIn("Paper in prep", text)
+        self.assertNotIn("new_structured_calibration.pdf", text)
         self.assertIn("Generic interface", text)
         self.assertIn("SAGE example", text)
         self.assertLess(len(text.splitlines()), 45)
@@ -107,7 +109,8 @@ class ProjectHomepageTests(unittest.TestCase):
 
         self.assertIn("Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration", text)
         self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
-        self.assertIn("assets/new_structured_calibration.pdf", text)
+        self.assertIn("Paper in prep", text)
+        self.assertNotIn("assets/new_structured_calibration.pdf", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
         self.assertIn("supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py", text)
         self.assertIn("src/autocalibration", text)
