@@ -11,7 +11,7 @@
 <section id="introduction" class="intro"><h1>Fully Autonomous Calibration for Astrophysics</h1>
 <p class="lede">Which simulation inputs reproduce the measurements you care about? Give the software a target profile and a range for each parameter. It learns from completed simulations and chooses which parameter combination to try next.</p>
 <h2>SAGE matched eight galaxy properties more closely</h2>
-<p>We calibrated the Semi-Analytic Galaxy Evolution (SAGE) model against eight observed galaxy properties, giving each property equal weight. A lower loss means closer overall agreement with observations.</p>
+<p>We calibrated the <a href="https://github.com/sage-home/sage-model">Semi-Analytic Galaxy Evolution (SAGE) model</a> against eight observed galaxy properties, giving each property equal weight. A lower loss means closer overall agreement with observations.</p>
 <table><thead><tr><th scope="col">SAGE model</th><th scope="col">Eight-property loss</th></tr></thead><tbody>
 <tr><td>Published manual calibration (<a href="https://doi.org/10.3847/0067-0049/222/2/22">Croton et al. 2016</a>)</td><td>0.128536</td></tr>
 <tr><td>Calibrated, baryon fraction free</td><td>0.104723</td></tr>
@@ -53,7 +53,7 @@ curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/simulate.py -o 
 <ul>
 <li><strong>Sedov blast wave.</strong> At a fixed time, compare density, pressure, radial velocity, and transformed specific internal energy with the analytical blast-wave solution on a common radial grid (<a href="https://doi.org/10.1098/rspa.1950.0049">Taylor 1950</a>). Each output is a simulated value minus its analytical reference, so the desired profile is zero at every radius. The reported error accounts for radial bin widths.</li>
 <li><strong>Rotating cylinder.</strong> The study uses the Enzo hydrodynamics code (<a href="https://doi.org/10.1088/0067-0049/211/2/19">Bryan et al. 2014</a>). Track the change in each of the three angular-momentum components at 51 saved times, relative to the initial component value and scaled by the magnitude of the initial axial angular momentum. Conservation gives a target of zero drift in each component at every time.</li>
-<li><strong>SAGE galaxy formation.</strong> The SAGE galaxy-formation model is described by <a href="https://doi.org/10.3847/0067-0049/222/2/22">Croton et al. (2016)</a>. Its calibration targets are observations. For example, the study uses the galaxy number density in stellar-mass bins measured by <a href="https://doi.org/10.1111/j.1365-2966.2008.13348.x">Baldry, Glazebrook &amp; Driver (2008)</a>. The adapter must apply the same bin definitions and logarithmic units to its predictions. The paper’s comparison score averages squared residuals within each observable after scaling by its observed range (mapped to [−1, 1]), then gives each observable equal weight. A densely sampled observable therefore gets the same total weight as a sparsely sampled one. <a href="https://github.com/YvonneWANGYY/calibration/blob/v0.2.0/src/autocalibration/paper_sage/comparison_target.json">Inspect the published SAGE target bins</a>.</li>
+<li><strong>SAGE galaxy formation.</strong> The <a href="https://github.com/sage-home/sage-model">SAGE codebase</a> implements the galaxy-formation model described by <a href="https://doi.org/10.3847/0067-0049/222/2/22">Croton et al. (2016)</a>. Its calibration targets are observations. For example, the study uses the galaxy number density in stellar-mass bins measured by <a href="https://doi.org/10.1111/j.1365-2966.2008.13348.x">Baldry, Glazebrook &amp; Driver (2008)</a>. The adapter must apply the same bin definitions and logarithmic units to its predictions. The paper’s comparison score averages squared residuals within each observable after scaling by its observed range (mapped to [−1, 1]), then gives each observable equal weight. A densely sampled observable therefore gets the same total weight as a sparsely sampled one. <a href="https://github.com/YvonneWANGYY/calibration/blob/v0.2.0/src/autocalibration/paper_sage/comparison_target.json">Inspect the published SAGE target bins</a>.</li>
 </ul>
 <h3>Set the parameter ranges and run budget</h3>
 <pre id="problem"><code>{
@@ -291,7 +291,7 @@ next_runs = session.recommend(n=2, seed=5)</code></pre>
             SAGE is the included example implementation of the generic recipe interface.
             Its recipe packages the target JSON, initial LHS summary,
             parameter range, NSF root, acquisition strategy, and output naming
-            into one editable case-study template.
+            into one editable case-study template. For the simulator and its build instructions, see the <a href="https://github.com/sage-home/sage-model">SAGE16 codebase</a>.
           </p>
           <div class="code-panel" aria-label="SAGE launcher dry-run command">
             <pre><code>python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json
