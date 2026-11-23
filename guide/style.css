@@ -1,0 +1,66 @@
+:root {
+  --ivory: #f7f3e9;
+  --ink: #25251f;
+  --muted: #575449;
+  --green: #144735;
+  --red: #a42332;
+  --rule: #cfc6b3;
+  --serif: "Baskervville", Baskerville, "Times New Roman", serif;
+  --sans: Inter, system-ui, sans-serif;
+  --ribbon: linear-gradient(to bottom, var(--green) 0 34%, var(--red) 34% 66%, var(--green) 66% 100%);
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 1.5rem; }
+body { margin: 0; background: var(--ivory); color: var(--ink); font: 1rem/1.68 var(--sans); }
+a { color: var(--green); text-underline-offset: .22em; }
+a:hover { color: var(--red); }
+:focus-visible { outline: 3px solid var(--red); outline-offset: 4px; }
+header { border-bottom: 1px solid var(--rule); text-align: center; }
+header::before { content: ""; display: block; height: 18px; background: var(--ribbon); }
+.bar { position: relative; width: min(1240px, 92%); margin: auto; padding: 1.85rem 0; }
+.bar .brand { color: var(--ink); font: 500 clamp(1.2rem, 2.7vw, 2.65rem)/1.2 var(--serif); letter-spacing: .065em; text-transform: uppercase; text-decoration: none; }
+.bar a:last-child { position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: .83rem; }
+.layout { width: min(1180px, 91%); margin: 0 auto; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: clamp(2rem, 5vw, 5rem); padding: 3.5rem 0 6rem; }
+.toc { position: sticky; top: 1.6rem; align-self: start; border-top: 1px solid var(--green); padding-top: 1.2rem; }
+.toc strong, .snippet button, th { font: 650 .76rem/1.45 var(--sans); text-transform: uppercase; letter-spacing: .09em; }
+.toc strong { color: var(--red); display: block; margin-bottom: .8rem; }
+.toc a { display: block; text-decoration: none; padding: .34rem 0; }
+.toc a:hover { text-decoration: underline; }
+main { min-width: 0; }
+.intro { position: relative; isolation: isolate; overflow: hidden; padding: clamp(1.8rem, 4.5vw, 4.5rem); background: #eae3d4; border: 1px solid var(--rule); }
+.intro::after { content: ""; position: absolute; z-index: -1; top: -60%; bottom: -60%; right: 3%; width: clamp(30px, 5.2vw, 75px); transform: rotate(25deg); background: linear-gradient(to right, var(--green) 0 34%, var(--red) 34% 66%, var(--green) 66% 100%); }
+h1, h2, h3 { font-family: var(--serif); font-weight: 500; line-height: 1.1; }
+h1 { margin: 0 0 1rem; font-size: clamp(3rem, 6.4vw, 6rem); letter-spacing: -.045em; }
+.lede { margin: 0; max-width: min(48ch, 76%); color: var(--muted); }
+section { margin-top: 2.6rem; padding-top: 1.7rem; border-top: 1px solid var(--rule); }
+h2 { margin: 0 0 1rem; color: var(--green); font-size: clamp(2rem, 3.5vw, 3rem); letter-spacing: -.028em; }
+h3 { color: var(--ink); font-size: 1.55rem; margin: 1.9rem 0 .7rem; }
+p { margin: .65rem 0 1rem; }
+.route { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.route a { padding: 1.05rem 1.15rem; background: var(--green); color: white; text-decoration: none; border-bottom: 4px solid var(--red); }
+.route a:hover { text-decoration: underline; }
+code, pre { font-family: ui-monospace, monospace; font-size: .9em; }
+main :not(pre) > code { color: #83242c; overflow-wrap: anywhere; }
+pre { background: #172c23; color: #faf5e7; overflow: auto; line-height: 1.6; margin: .5rem 0 1.2rem; padding: 1.25rem; }
+pre code { font-size: inherit; }
+.snippet button { display: block; margin-left: auto; color: var(--green); background: transparent; border: 1px solid var(--green); padding: .3rem .75rem; cursor: pointer; }
+.snippet button:hover { background: var(--green); color: white; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: .6rem .4rem; border-bottom: 1px solid var(--rule); }
+th { border-top: 2px solid var(--green); color: var(--green); }
+.skip { position: absolute; left: -10000px; }
+.skip:focus { left: .8rem; top: 1rem; z-index: 3; padding: .5rem; background: white; }
+@media (max-width: 800px) {
+  .bar { display: grid; justify-items: center; gap: .4rem; padding: 1.25rem 0; }
+  .bar a:last-child { position: static; transform: none; }
+  .layout { display: block; padding-top: 1.2rem; }
+  .toc { position: static; border: 0; padding: 0 0 1rem; }
+  .toc strong { margin-bottom: .3rem; }
+  .toc a { display: inline-block; margin-right: .8rem; font-size: .87rem; }
+}
+@media (max-width: 520px) {
+  .intro { padding: 1.8rem 2rem 1.8rem 1.35rem; }
+  .intro::after { top: 0; bottom: 0; right: 0; width: 14px; transform: none; }
+  .lede { max-width: 100%; }
+  .route { grid-template-columns: 1fr; }
+}
