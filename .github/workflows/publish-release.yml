@@ -2,6 +2,8 @@ name: Publish calibration release
 on:
   push:
     tags: ['v[0-9]*']
+    branches: [main]
+    paths: [.github/workflows/publish-release.yml]
 permissions:
   contents: write
 jobs:
@@ -12,7 +14,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.5.2' }}
         run: |
-          gh release view "$RELEASE_TAG" >/dev/null 2>&1 ||
-            gh release create "$RELEASE_TAG" --verify-tag --notes-from-tag --title "Calibration $RELEASE_TAG"
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then exit 0; fi
+          tag_sha=$(gh api "repos/$GH_REPO/git/ref/tags/$RELEASE_TAG" --jq '.object.sha')
+          gh api "repos/$GH_REPO/git/tags/$tag_sha" --jq '.message' > "$RUNNER_TEMP/notes.md"
+          gh release create "$RELEASE_TAG" --verify-tag --notes-file "$RUNNER_TEMP/notes.md" --title "Calibration $RELEASE_TAG"
