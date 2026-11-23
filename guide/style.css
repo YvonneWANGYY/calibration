@@ -88,3 +88,11 @@ summary:hover { color: var(--red); }
 .paper-figure figcaption { margin: .45rem 0; font-size: .9rem; color: var(--muted); }
 .settings dt { color: var(--green); font-weight: 650; }
 .settings dd { margin: .25rem 0 1rem; }
+
+.intro h1 { font-size: clamp(2.55rem, 5vw, 4.8rem); }
+.route { margin-top: 1.5rem; }
+.route a + a { background: transparent; color: var(--green); border: 1px solid var(--green); }
+.choices h4 { margin: 0; font: 500 1.45rem/1.2 var(--serif); color: var(--green); }
+.choices > div { min-width: 0; }
+.choices pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.steps li, details li { margin-bottom: .75rem; }

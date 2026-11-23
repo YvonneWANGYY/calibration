@@ -12,84 +12,43 @@ class ProjectHomepageTests(unittest.TestCase):
         self.readme_path = ROOT / "README.md"
         self.profile_path = ROOT / "profile" / "README-project-card.md"
 
-    def test_project_page_has_required_research_claims(self):
+    def test_reader_guide_uses_the_released_flow_workflow(self):
         text = self.index_path.read_text()
+        sections = re.findall(r'<section id="([^"]+)"', text)
+        self.assertEqual(sections, ["introduction", "reproduce", "your-problem", "pipeline"])
+        self.assertIn("@v0.3.0", text)
+        self.assertNotIn("@v0.2.0", text)
+        for term in ("autocalibration reproduce-sage", "best_observed", "final_recommendation",
+                     "published manual calibration", "Croton et al.", "sage-home/sage-model",
+                     "0.104723", "0.128536", "18.5%", "every_iteration"):
+            self.assertIn(term, text)
 
-        self.assertIn(
-            "Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration",
-            text,
-        )
-        self.assertIn("SAGE recipe-driven launcher", text)
-        self.assertIn("researcher-defined inputs", text)
-        self.assertIn("Sedov--Taylor", text)
-        self.assertIn("Rotating Cylinder", text)
-        self.assertIn("local SAGE", text)
-
-    def test_project_page_links_to_reproducibility_artifacts(self):
+    def test_heat_download_matches_the_commands_and_released_simulator(self):
+        import json
+        from zipfile import ZipFile
         text = self.index_path.read_text()
+        with ZipFile(ROOT / "guide/heat-example.zip") as archive:
+            def read(name):
+                return archive.read("heat-example/" + name)
+            generated = json.loads(read("new-design.json"))
+            imported = json.loads(read("existing-runs.json"))
+            self.assertEqual(generated, json.loads((ROOT / "guide/heat/flow-problem.json").read_text()))
+            self.assertEqual(read("simulate.py"), (ROOT / "guide/heat/simulate.py").read_bytes())
+            self.assertEqual(read(imported.pop("initial_data")), (ROOT / "guide/initial.csv").read_bytes())
+            self.assertEqual(generated.pop("initial_samples"), 8)
+            self.assertEqual(imported, generated)
+            for file in ("new-design.json", "existing-runs.json"):
+                self.assertIn("autocalibration run " + file, text)
 
-        self.assertIn("https://github.com/YvonneWANGYY/calibration", text)
-        self.assertIn("supplement/sage_recipe_launcher/recipes/sage8_ensemble_map_20iter.json", text)
-        self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
-        self.assertIn("python scripts/launch_sage_calibration.py --recipe recipes/sage8_ensemble_map_20iter.json", text)
-        self.assertIn("supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json", text)
-        self.assertIn("supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py", text)
-        self.assertIn("python scripts/launch_adaptive_calibration.py --recipe recipes/adaptive_calibration_template.json", text)
-        self.assertIn("src/autocalibration", text)
-        self.assertIn("notebooks/sage_like_recommendation_loop.ipynb", text)
-        self.assertIn("Paper in prep", text)
-        self.assertNotIn("assets/new_structured_calibration.pdf", text)
-        self.assertNotIn("--write-pbs", text)
-        self.assertIn("autocalibration run my-problem/problem.json", text)
-
-    def test_project_page_presents_generic_launcher_as_primary_interface(self):
+    def test_guide_links_and_figures_resolve(self):
         text = self.index_path.read_text()
-
-        self.assertIn("Generic recipe launcher", text)
-        self.assertIn("Worked example", text)
-        self.assertIn(
-            "SAGE is the included example implementation of the generic recipe interface",
-            text,
-        )
-        self.assertLess(
-            text.index("Generic recipe launcher"),
-            text.index("SAGE recipe-driven launcher"),
-        )
-        self.assertNotIn("SAGE automation highlight", text)
-
-    def test_reproducibility_links_use_short_resource_cards(self):
-        text = self.index_path.read_text()
-
-        self.assertIn('class="resource-grid"', text)
-        self.assertIn('class="resource-card"', text)
-        self.assertIn('<span class="resource-title">Paper in prep</span>', text)
-        self.assertIn('<span class="resource-title">SAGE recipe</span>', text)
-        self.assertIn('<span class="resource-title">SAGE launcher</span>', text)
-        self.assertIn('<span class="resource-title">Generic recipe</span>', text)
-        self.assertIn('<span class="resource-title">Generic launcher</span>', text)
-        self.assertNotIn('>supplement/sage_recipe_launcher', text)
-        self.assertNotIn('>supplement/generic_recipe_launcher', text)
-        self.assertNotIn('>Download new_structured_calibration.pdf<', text)
-
-    def test_project_page_uses_existing_visual_asset(self):
-        text = self.index_path.read_text()
-        asset = ROOT / "assets" / "sage8-direct-map-trajectory.png"
-
-        self.assertTrue(asset.exists(), f"missing homepage visual asset: {asset}")
-        self.assertIn("assets/sage8-direct-map-trajectory.png", text)
-        self.assertRegex(text, r"<img[^>]+alt=\"SAGE active-learning trajectory")
-
-    def test_project_page_keeps_autonomy_boundary_honest(self):
-        text = re.sub(r"\s+", " ", self.index_path.read_text())
-
-        self.assertIn(
-            "Autonomous means the closed-loop run proceeds after the recipe is specified",
-            text,
-        )
-        self.assertIn(
-            "It does not mean the system invents the science target, parameter domain, simulator wrapper, PBS resource policy, or initial design",
-            text,
-        )
+        ids = re.findall(r' id="([^"]+)"', text)
+        self.assertEqual(len(ids), len(set(ids)))
+        for fragment in re.findall(r'href="#([^"]+)"', text):
+            self.assertIn(fragment, ids)
+        for path in re.findall(r'(?:href|src)="((?:guide|assets)/[^"?]+)', text):
+            self.assertTrue((ROOT / path).is_file(), path)
+        self.assertIn("assets/calibration-workflow.png", text)
 
     def test_profile_card_is_short_and_links_to_full_project(self):
         text = self.profile_path.read_text()
@@ -123,20 +82,14 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertNotIn("fully-autonomous-calibration", text)
 
     def test_library_and_notebook_examples_are_publicly_linked(self):
-        index_text = self.index_path.read_text()
         readme_text = self.readme_path.read_text()
 
-        self.assertIn("Local recommendation loop", index_text)
-        self.assertIn("Cold-start LHS", index_text)
-        self.assertIn("src/autocalibration", index_text)
-        self.assertIn("notebooks/sage_like_recommendation_loop.ipynb", index_text)
         self.assertIn("examples/sage_like_initial_metrics.csv", readme_text)
         self.assertIn("examples/sage_like_target_profile.json", readme_text)
 
     def test_scheduler_wrapping_is_left_to_users(self):
         launcher = ROOT / "supplement" / "sage_recipe_launcher" / "scripts" / "launch_sage_calibration.py"
         recipe = ROOT / "supplement" / "sage_recipe_launcher" / "recipes" / "sage8_ensemble_map_20iter.json"
-        index_text = self.index_path.read_text()
         readme_text = self.readme_path.read_text()
 
         launcher_text = launcher.read_text()
@@ -153,9 +106,6 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertNotIn('"pbs"', recipe_text)
         self.assertNotIn('"nodetype"', recipe_text)
         self.assertNotIn('"ngpus"', recipe_text)
-        self.assertIn("Edit before running", index_text)
-        self.assertIn("write your own scheduler wrapper", index_text)
-        self.assertNotIn("JSON-to-PBS", index_text)
         self.assertIn("Edit before running", readme_text)
         self.assertIn("write your own scheduler wrapper", readme_text)
 
