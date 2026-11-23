@@ -1,0 +1,3 @@
+metric_id,observable,coordinate,value
+signal_t1,signal,1,0.8
+signal_t2,signal,2,0.5
