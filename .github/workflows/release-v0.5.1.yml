@@ -1,7 +1,9 @@
 name: Publish v0.5.1 release
 on:
+  workflow_dispatch:
   push:
-    tags: [v0.5.1]
+    branches: [main]
+    paths: [.github/workflows/release-v0.5.1.yml]
 permissions:
   contents: write
 jobs:
