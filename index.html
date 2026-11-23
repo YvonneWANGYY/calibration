@@ -4,42 +4,94 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</title>
 <meta name="description" content="Install autocalibration, define a target profile, and connect a simulator or import completed simulations.">
-<link rel="stylesheet" href="guide/style.css?v=reader-guide-3"></head>
+<link rel="stylesheet" href="guide/style.css?v=six-section-guide"></head>
 <body><a class="skip" href="#main">Skip to content</a><header><div class="bar"><a class="brand" href="./">Calibration for Astrophysics</a><a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0">Source · v0.3.0 ↗</a></div></header>
-<div class="layout"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#introduction">1. Introduction &amp; SAGE result</a><a href="#reproduce">2. Reproduce the result</a><a href="#your-problem">3. Calibrate your simulator</a><a href="#pipeline">4. Pipeline &amp; tuning</a></nav>
-<main id="main">
-<section id="introduction" class="intro">
+<div class="layout"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#overview">1. Overview</a><a href="#quickstart">2. Quickstart</a><a href="#your-problem">3. Use your own simulator</a><a href="#settings">4. Settings guide</a><a href="#results">5. Results from the paper</a><a href="#faq">6. Limits, FAQ and citation</a></nav><main id="main">
+<section id="overview" class="intro">
 <h1>Fully Autonomous Calibration for Astrophysics</h1>
-<p class="lede">Which simulation should you run next? Specify the parameters you can vary, the outputs you want to match, and your simulation budget. The software learns from completed runs, chooses the next inputs, and tests its final recommendation with your simulator.</p>
-<h2>Calibrating galaxy formation with SAGE</h2>
-<p>We used the <a href="https://github.com/sage-home/sage-model">Semi-Analytic Galaxy Evolution (SAGE)</a> model to fit eight observed galaxy properties, allowing the baryon fraction to vary. We gave each property equal weight. The best simulation found during the adaptive search reduced the loss by <strong>18.5%</strong> relative to the published manual calibration.</p>
-<table><thead><tr><th scope="col">SAGE model</th><th scope="col">Loss</th></tr></thead><tbody>
-<tr><td>Published manual calibration (<a href="https://doi.org/10.3847/0067-0049/222/2/22">Croton et al. 2016</a>)</td><td>0.128536</td></tr>
-<tr><td>Automated calibration, baryon fraction free</td><td>0.104723</td></tr></tbody></table>
-<p>A lower loss means closer overall agreement. The calibrated model brought stellar mass density closer to observations, although it still predicted too few galaxies with little ongoing star formation.</p>
-<div class="route"><a href="#reproduce">Reproduce the SAGE comparison ↓</a><a href="#your-problem">Calibrate my simulator ↓</a></div>
-</section>
+<p class="lede">Tune your simulation’s parameters to match a target within a limited simulation budget.</p>
+<div class="actions"><a href="#quickstart">Quickstart ↓</a> <a href="#paper">Paper</a> <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0">Code ↗</a> <a href="#cite">Cite</a></div>
+<p><strong>Use it when</strong> each simulation is expensive, several inputs are adjustable, and you can describe a good outcome. Your target might come from measurements, an analytical solution, or a conservation law.</p>
+<p><strong>You provide</strong> parameter ranges, target values, a simulator command, and a round budget. <strong>You receive</strong> the best run found, a separately evaluated final recommendation, and a record of every evaluation.</p>
+<h2>How it works</h2>
+<div class="loop" aria-label="Calibration loop">Parameters → Your simulator → Outputs → Learn → Next parameters ↻</div>
+<ol class="steps"><li>Start with completed simulations or generate an initial design spanning your parameter ranges.</li><li>Fit models that learn which inputs tend to produce outputs near your target.</li><li>Choose the next inputs. Early rounds favor exploration where models disagree. Later rounds favor promising regions the models agree on.</li><li>Run your simulator, record its outputs, and repeat for the requested number of rounds.</li><li>Refit using all evaluations, choose a final parameter set, and test it in one extra simulation.</li></ol>
+<aside class="glossary"><h3>Key terms</h3><dl class="terms"><dt>Parameters (θ)</dt><dd>Inputs you can change, such as heater temperature.</dd><dt>Outputs (c)</dt><dd>Quantities measured in one simulation.</dd><dt>Target (c★)</dt><dd>Desired values of those same quantities.</dd><dt>Loss</dt><dd>One number measuring the discrepancy. Lower is better.</dd><dt>Adaptive round</dt><dd>One cycle of learning, choosing inputs, and running the simulator.</dd><dt>Best observed</dt><dd>The evaluated run with the lowest measured loss.</dd><dt>Final recommendation</dt><dd>The last choice from the refitted model, tested in one extra simulation. An earlier run may fit better.</dd></dl></aside>
+<details id="pipeline"><summary>See Figure 1 and the method used in the paper</summary><figure class="paper-figure"><a href="assets/calibration-workflow.png"><img src="assets/calibration-workflow.png" width="1635" height="942" alt="The loop fits flows to completed simulations, draws candidate inputs for the target, ranks them, and adds new simulation outputs to the training data."></a><figcaption>Figure 1 from Wang et al. (in preparation). <a href="assets/calibration-workflow.png">Open the full-size figure ↗</a></figcaption></figure><p>The paper fits conditional neural spline flows to simulation input–output pairs. Given the target, the ensemble draws and ranks candidate inputs. After the adaptive rounds it estimates the peak of the calibration density in physical parameter coordinates. See “Candidate Selection” in the <a href="#cite">manuscript</a>. <a href="https://arxiv.org/abs/1906.04032">Durkan et al. (2019)</a>.</p></details></section>
 
-<section id="reproduce"><h2 id="paper">Reproduce the SAGE result</h2>
-<p id="getting-started">Replay model selection using the archived simulation outputs. You can check the table above without running SAGE or installing a machine-learning library. In a Python 3.10+ environment with Git available, run:</p>
-<pre><code>python -m pip install 'git+https://github.com/YvonneWANGYY/calibration.git@v0.3.0'
-autocalibration reproduce-sage</code></pre>
-<p>In the output, read <code>L8</code> for the first model (the published manual calibration) and for <code>Eight targets: equal weights</code> (the automated search with the baryon fraction free). These are the two losses above, rounded to six decimal places.</p>
-<details><summary>How the paper scores SAGE</summary>
-<p>For each galaxy property, the study scales simulated and observed values using the observed range, then averages the squared differences across its bins. The eight-property loss is the mean of those eight scores. A property with more bins therefore receives the same weight as one with fewer bins.</p>
-<p><a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0/src/autocalibration/paper_sage">Browse the released targets, evaluated models, and run configurations ↗</a></p></details>
-</section>
+<section id="quickstart"><h2>Quickstart · Heat a rod</h2>
+<p>Find a heater temperature and thermal diffusivity that reproduce the temperatures at three distances along a rod after one minute.</p>
+<p><strong>You need</strong> Python 3.10 or newer, Git, and a CPU. Our test took about six seconds after installation using one CPU thread. Installation time depends mainly on downloading PyTorch.</p>
+<h3 id="install">1. Install the software</h3>
+<pre><code>python -m pip install 'fully-autonomous-calibration[tuning] @ git+https://github.com/YvonneWANGYY/calibration.git@v0.3.0'</code></pre>
+<h3>2. Download the example</h3><p><a href="guide/heat-example.zip" download>Download the heat example (ZIP)</a> and extract it. Open a terminal in the <code>heat-example</code> folder beside <code>simulate.py</code>.</p>
+<h3 id="new">3. Run the calibration</h3>
+<pre><code>autocalibration run new-design.json --output from-design</code></pre>
+<h3 id="output">What you should see</h3><p>After the training messages, the final line reads:</p>
+<samp>Completed 13 evaluations. Results in from-design</samp>
+<figure class="paper-figure"><img src="guide/heat/loss.png" alt="Loss for all 13 heat simulations. The final test at run 13 had the lowest loss in this example."><figcaption>Each point is a measured simulation. The loss can rise on an exploratory run. In this example the final test also gave the closest fit.</figcaption></figure>
+<p><strong>Check it worked.</strong> Open <code>from-design/summary.json</code>. Look for 13 evaluations, three temperatures in the final record, and a best loss no greater than the final loss. Our run reached 13.77 °C² with an 83.03 °C heater. Exact values can vary with the training environment.</p>
+<details><summary>See the complete example summary.json</summary><pre><code>{
+  &quot;evaluations&quot;: 13,
+  &quot;best_observed&quot;: {
+    &quot;kind&quot;: &quot;final_recommendation&quot;,
+    &quot;parameters&quot;: {
+      &quot;diffusivity_cm2_s&quot;: 0.0696390151977539,
+      &quot;heater_c&quot;: 83.03335666656494
+    },
+    &quot;rank&quot;: 1,
+    &quot;evaluation&quot;: 13,
+    &quot;metrics&quot;: {
+      &quot;temp_1cm&quot;: 65.9820600017668,
+      &quot;temp_3cm&quot;: 38.87852084547196,
+      &quot;temp_5cm&quot;: 25.277617916808758
+    },
+    &quot;loss&quot;: 13.77159541329529
+  },
+  &quot;final_recommendation&quot;: {
+    &quot;kind&quot;: &quot;final_recommendation&quot;,
+    &quot;parameters&quot;: {
+      &quot;diffusivity_cm2_s&quot;: 0.0696390151977539,
+      &quot;heater_c&quot;: 83.03335666656494
+    },
+    &quot;rank&quot;: 1,
+    &quot;evaluation&quot;: 13,
+    &quot;metrics&quot;: {
+      &quot;temp_1cm&quot;: 65.9820600017668,
+      &quot;temp_3cm&quot;: 38.87852084547196,
+      &quot;temp_5cm&quot;: 25.277617916808758
+    },
+    &quot;loss&quot;: 13.77159541329529
+  }
+}</code></pre></details>
+<h3 id="initial">Choose your starting point</h3><div class="table-scroll" role="region" tabindex="0" aria-label="You have table"><table><thead><tr><th scope="col">You have</th><th scope="col">Problem file</th><th scope="col">Starting data</th></tr></thead><tbody><tr><td>Completed runs</td><td><code>existing-runs.json</code></td><td><code>initial_data</code> points to your CSV. The example reuses two runs and makes five new calls.</td></tr><tr><td>No runs yet</td><td><code>new-design.json</code></td><td><code>initial_samples</code> sets the Latin hypercube size. The example makes 8 initial + 4 adaptive + 1 final call.</td></tr></tbody></table></div>
+<p id="import">To try the completed-run route with the supplied CSV, use the same installation and run:</p>
+<pre><code>autocalibration run existing-runs.json --output from-runs</code></pre>
+<p>Expect <samp>Completed 7 evaluations.</samp> That total includes the two imported rows. Each route needs a fresh output folder.</p></section>
 
-<section id="your-problem"><h2>Have a calibration problem?</h2>
-<p>You supply a parameter range for each input, a target profile, a command that runs your simulator, and the number of adaptive rounds you can afford. Try the heat example first, then replace its inputs and outputs with yours.</p>
-<h3 id="target"><span id="target-profile"></span>What is a target profile?</h3>
+<section id="your-problem"><h2>Use your own simulator</h2>
+<p>Copy either heat problem file and change four things. Keep <code>"method": "neural_spline_flow"</code> to use the flow workflow.</p>
+<ol class="steps"><li><strong>Parameters.</strong> Give each adjustable input a name, lower bound, and upper bound. For positive values spanning orders of magnitude, logarithmic spacing gives each decade comparable coverage. For example, use <code>{"name":"diffusivity","lower":0.001,"upper":1,"scale":"log"}</code>. Use linear spacing when equal absolute increments make sense.</li>
+<li><strong>Target.</strong> Under <code>target</code>, name each output and give its desired value. Use identical IDs in the simulator response and the imported CSV. Compare outputs at the same coordinates, time, and units.</li>
+<li id="adapter"><strong>Simulator command.</strong> For a Python adapter, set <code>"simulator": ["{python}", "simulate.py"]</code>. The runner starts it in the problem file’s directory and sends one JSON object on standard input.</li>
+<li><strong>Budget.</strong> Set <code>adaptive_steps</code> to the number of learn–select–run cycles. Budget for any newly generated initial runs and one final recommendation as well.</li></ol>
+<details><summary>Python adapter template</summary><p>Replace the import and call with your model’s interface. This example assumes the model returns temperatures keyed by distance in centimetres.</p>
+<pre><code>import json
+import sys
+from my_solver import simulate
+
+parameters = json.load(sys.stdin)
+temperatures = simulate(**parameters)
+outputs = {f"temp_{x}cm": temperatures[x] for x in (1, 3, 5)}
+print(json.dumps(outputs, allow_nan=False))</code></pre><p>Print diagnostics to standard error. <a href="guide/heat/simulate.py">See the complete runnable heat solver</a>.</p></details>
+<details id="target"><summary id="target-profile">See the illustrated target-profile example</summary>
 <p>A target profile describes what you want the simulator to reproduce. Choose the output you want to match, where to compare it, and the value you want it to take at each point. Use the same reference for every parameter set, whether your first simulations are imported or newly generated.</p>
 <p>In the paper, <var>θ</var> denotes the inputs you can adjust, <var>c</var> is the set of quantities measured in one simulation, and <var>c</var><sub>★</sub> contains their desired values. A completed simulation gives one pair (<var>θ</var>, <var>c</var>). The paper’s conditional neural spline flow (<a href="https://arxiv.org/abs/1906.04032">Durkan et al. 2019</a>) learns from these pairs and proposes new inputs for the desired <var>c</var><sub>★</sub>. A loss then summarizes how closely a completed run matches the reference.</p>
 <h4>How far does heat travel along a rod?</h4>
 <p>A 10 cm rod starts at 20 °C. A heater holds its left end at a constant temperature while its right end stays at 20 °C. The simulator divides the rod into cells and advances the heat equation for 60 seconds. You can change two inputs: the heater temperature and the thermal diffusivity, which controls how quickly heat spreads.</p>
 <p><strong>Your target is a temperature profile.</strong> At 60 seconds, you want the simulation to match temperatures at three positions along the rod. For this tutorial we generated those target readings using a finer reference simulation (200 cells, diffusivity 0.09 cm²/s, heater 80 °C) and rounded them to two decimals. Every trial uses 100 cells.</p>
 <figure style="margin:1rem 0"><img src="guide/heat/profile.svg" width="720" height="355" style="width:100%;height:auto" alt="The trial temperature falls with distance from the heater and lies below all three target temperatures."></figure>
-<table><thead><tr><th scope="col">Distance</th><th scope="col">Target at 60 s</th><th scope="col">Trial at 60 s</th><th scope="col">Output ID</th></tr></thead><tbody><tr><td>1 cm</td><td>65.66 °C</td><td>58.90 °C</td><td><code>temp_1cm</code></td></tr><tr><td>3 cm</td><td>41.68 °C</td><td>30.26 °C</td><td><code>temp_3cm</code></td></tr><tr><td>5 cm</td><td>27.69 °C</td><td>21.35 °C</td><td><code>temp_5cm</code></td></tr></tbody></table>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Rod temperatures"><table><thead><tr><th scope="col">Distance</th><th scope="col">Target at 60 s</th><th scope="col">Trial at 60 s</th><th scope="col">Output ID</th></tr></thead><tbody><tr><td>1 cm</td><td>65.66 °C</td><td>58.90 °C</td><td><code>temp_1cm</code></td></tr><tr><td>3 cm</td><td>41.68 °C</td><td>30.26 °C</td><td><code>temp_3cm</code></td></tr><tr><td>5 cm</td><td>27.69 °C</td><td>21.35 °C</td><td><code>temp_5cm</code></td></tr></tbody></table></div>
 <p><strong>Read one trial.</strong> With the heater at 80 °C and diffusivity at 0.04 cm²/s, too little heat reaches the interior. Increasing diffusivity would carry heat farther along the rod. The pipeline tries parameter pairs and compares the three simulated temperatures with the same three targets each time. The local loss is the sum of the three squared temperature differences.</p>
 <p>For your own simulation, choose an output field, a sampling time, and the locations where you want to match it. Put the desired values in your problem file under <code>target</code>. Have your adapter return the simulated values under the same IDs. An imported results table uses those IDs as column names. <a download href="guide/target-profile.csv">Download the rod target profile</a> · <a href="guide/heat/simulate.py">Read the heat solver</a></p>
 <details><summary>How the paper defines its targets</summary>
@@ -48,49 +100,45 @@ autocalibration reproduce-sage</code></pre>
 <li><strong>Rotating cylinder.</strong> The study uses the Enzo hydrodynamics code (<a href="https://doi.org/10.1088/0067-0049/211/2/19">Bryan et al. 2014</a>). Track the change in each of the three angular-momentum components at 51 saved times, relative to the initial component value and scaled by the magnitude of the initial axial angular momentum. Conservation gives a target of zero drift in each component at every time.</li>
 <li><strong>SAGE galaxy formation.</strong> The <a href="https://github.com/sage-home/sage-model">SAGE codebase</a> implements the galaxy-formation model described by <a href="https://doi.org/10.3847/0067-0049/222/2/22">Croton et al. (2016)</a>. Its calibration targets are observations. For example, the study uses the galaxy number density in stellar-mass bins measured by <a href="https://doi.org/10.1111/j.1365-2966.2008.13348.x">Baldry, Glazebrook &amp; Driver (2008)</a>. The adapter must apply the same bin definitions and logarithmic units to its predictions. The paper’s comparison score averages squared residuals within each observable after scaling by its observed range (mapped to [−1, 1]), then gives each observable equal weight. A densely sampled observable therefore gets the same total weight as a sparsely sampled one. <a href="https://github.com/YvonneWANGYY/calibration/blob/v0.3.0/src/autocalibration/paper_sage/comparison_target.json">Inspect the published SAGE target bins</a>.</li>
 </ul></details>
-<h3 id="install">Set up once for either starting point</h3>
-<p>Install the release with flow fitting and tuning enabled. <a href="guide/heat-example.zip" download>Download the heat example (ZIP)</a>, extract it, and open a terminal in the folder containing <code>simulate.py</code> and the two problem files.</p>
-<pre><code>python -m pip install 'fully-autonomous-calibration[tuning] @ git+https://github.com/YvonneWANGYY/calibration.git@v0.3.0'</code></pre>
-<h3 id="initial">Choose your starting point</h3>
-<div class="choices"><div id="import"><h4>I have completed simulations</h4>
-<p>Use <code>existing-runs.json</code>. Its <code>initial_data</code> field points to a CSV with one row per completed run. The rows can come from any design. The example reuses two runs, makes four adaptive calls, then evaluates one final recommendation.</p>
-<pre><code>autocalibration run existing-runs.json --output from-runs</code></pre></div>
-<div id="new"><h4>I need an initial design</h4>
-<p>Use <code>new-design.json</code>. Set <code>initial_samples</code> to the number of initial runs you can afford. The example generates eight <a href="https://doi.org/10.1080/00401706.1979.10489755">Latin hypercube</a> points across the parameter ranges, evaluates them, then makes the same four adaptive calls and one final call.</p>
-<pre><code>autocalibration run new-design.json --output from-design</code></pre></div></div>
-<details id="adapter"><summary>Connect your own simulator</summary>
-<ol><li>In either problem file, edit <code>parameters</code> and their bounds. Under <code>target</code>, give each desired output a name and numeric value. Set <code>adaptive_steps</code> to your round budget. Keep <code>method</code> set to <code>neural_spline_flow</code> to use the flow workflow.</li>
-<li>Set <code>simulator</code> to your executable and its arguments. For each evaluation the software sends one JSON object on standard input. For the heat trial above it sends <code>{"diffusivity_cm2_s": 0.04, "heater_c": 80}</code>.</li>
-<li>Have your command run the simulation, extract the outputs, and print one JSON object on standard output. The example returns roughly <code>{"temp_1cm": 58.90, "temp_3cm": 30.26, "temp_5cm": 21.35}</code>. Match the target names, units, and sampling coordinates. Write diagnostics to standard error.</li>
-<li>If importing runs, use these same parameter and output names as column headers. The example includes a working <code>initial.csv</code>.</li></ol>
-<p>The local runner sums squared differences across outputs. Choose consistent scaling when your outputs have different units. The SAGE replay uses the paper’s observable-level loss described above.</p></details>
-<details id="run-results"><summary>Read the run results</summary><p>Open <code>summary.json</code> in your output folder. <code>best_observed</code> is the lowest measured loss among all evaluated points, including imported runs. <code>final_recommendation</code> is the simulation evaluated after the last flow fit. Compare their losses and individual outputs to see where each matches the target.</p>
-<p><code>evaluations.jsonl</code> records each point and its outputs. <code>flow_history.jsonl</code> records the model settings and validation scores. Use a new output folder for each run.</p></details>
-</section>
+</details>
+<h3>Before you run</h3><ul><li>Test the simulator command with one input. Check that it exits successfully and prints a single JSON object with a finite number for every target ID.</li><li>Check the units and scale of each simulated output against its target. For imports, check parameter bounds and column names.</li><li>If your simulator is stochastic, choose how to handle its seed or average repeated runs inside your adapter. The runner records each returned value as one observation.</li><li>Use a new output folder. A failed evaluation stops the run. Completed rows remain in <code>evaluations.jsonl</code>.</li></ul>
+<details><summary>Choosing a loss for outputs with different units</summary><p>The local runner sums squared differences between the outputs and their targets. For temperatures in °C, the loss is in °C². For unlike quantities, apply the same scaling to each target and its simulated counterpart before returning them. Otherwise a large numerical range can dominate the loss.</p><p>The SAGE paper maps each observable’s observed range to [−1, 1], averages squared differences across that observable’s bins, then averages across observables. This gives equal weight to each galaxy property. <a href="https://github.com/YvonneWANGYY/calibration/blob/v0.3.0/src/autocalibration/paper_sage/comparison_target.json">See the SAGE comparison targets</a>.</p></details></section>
 
-<section id="pipeline"><h2>How the pipeline chooses a simulation</h2>
-<figure class="paper-figure"><a href="assets/calibration-workflow.png"><img src="assets/calibration-workflow.png" width="1635" height="942" alt="The loop fits flows to completed simulations, draws candidate inputs for the target, ranks them, and adds new simulation outputs to the training data."></a><figcaption>Figure 1 from Wang et al. (in preparation). <a href="assets/calibration-workflow.png">Open the full-size figure ↗</a></figcaption></figure>
-<ol class="steps"><li><strong>Learn from completed simulations.</strong> Each run pairs inputs with measured outputs. An ensemble of conditional neural spline flows learns which input combinations are plausible for a given output profile. <a href="https://arxiv.org/abs/1906.04032">Durkan et al. (2019)</a>.</li>
-<li><strong>Choose the next run.</strong> Given the desired profile, the flows draw candidate inputs. The search ranks candidates by ensemble density and by how much the flows disagree. The simulator evaluates the selected inputs, and the measured outputs join the training set.</li>
-<li><strong>Test the final recommendation.</strong> After the last adaptive round, the ensemble fits all completed simulations and estimates the peak of the calibration density in physical parameter coordinates. A separate simulation measures how closely that recommendation matches the target.</li></ol>
-<p>The paper applies this loop to Sedov–Taylor blast waves, angular-momentum conservation in a rotating cylinder, and galaxy formation with SAGE. For the selection equations and the optional simulation-cost penalty, see “Candidate Selection” and “Cost-Aware Candidate Selection” in Wang, Oh, Kim &amp; Jo, <cite>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</cite> (in preparation).</p>
-<h3 id="flow-tuning">Which settings should I change?</h3>
-<dl class="settings"><dt>Simulation budget · <code>adaptive_steps</code></dt><dd>Set how many new simulations to run after the initial data are ready. Reserve one additional simulator call for the final recommendation.</dd>
-<dt>Candidate pool · <code>candidate_pool_size</code></dt><dd>Set how many parameter combinations to consider per round. The heat example ranks 256 and sends one to the simulator.</dd>
-<dt>Hyperparameter tuning · <code>tuning.schedule</code></dt><dd>The paper tunes once on the initial simulations. Use <code>initial</code> for that schedule, or <code>every_iteration</code> to repeat the search before each adaptive proposal. Both schedules refit the flow weights after new data arrive. <a href="https://doi.org/10.1145/3292500.3330701">Optuna, Akiba et al. (2019)</a>.</dd></dl>
-<details><summary>Flow settings, the disagreement weight λ, and optional cost</summary>
-<p><strong>Model fitting.</strong> Under <code>tuning</code>, <code>trials</code> sets how many configurations Optuna tests and <code>folds</code> sets how many groups it uses for held-out validation. Provide at least as many initial simulations as folds. The search selects the settings with the lowest mean held-out negative log-likelihood. <code>epochs</code> controls training passes per fit and <code>members</code> the number of independently fitted flows. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0#tune-a-neural-spline-flow-with-optuna">See the editable hyperparameter search space ↗</a>.</p>
-<p><strong>Disagreement weight (λ).</strong> The released runner computes λ from the round number. Across multiple rounds it rises from −1 to +1. Early rounds reward disagreement so the search explores uncertain regions. Late rounds penalize disagreement so it favors high-density candidates the flows support consistently. A single adaptive round uses −1.</p>
-<p><strong>Cost weight (β).</strong> In the paper’s cost-aware hydrodynamic experiments, a positive β penalizes candidates with higher predicted computational cost. The v0.3.0 heat workflow ranks candidates using density and disagreement.</p></details>
-<p><a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0">Software, license, and research supplements ↗</a></p>
-</section>
+<section id="settings"><h2 id="flow-tuning">Settings guide</h2>
+<p>Start with your simulation budget. Increasing the number of candidates or model fits mainly changes how much computation goes into choosing each run.</p><div class="table-scroll" role="region" tabindex="0" aria-label="Setting table"><table><thead><tr><th scope="col">Setting</th><th scope="col">What it controls</th><th scope="col">Example or default</th><th scope="col">When choosing</th></tr></thead><tbody><tr><td><code>adaptive_steps</code></td><td>New adaptive simulations</td><td>4 in the heat example. The paper used 20 for hydrodynamics and 25 for SAGE.</td><td>Reserve one extra call for the final recommendation.</td></tr><tr><td><code>initial_samples</code></td><td>Initial space-filling runs</td><td>8 for heat, 5 for hydrodynamics, 25 for SAGE.</td><td>Supply at least as many initial runs as validation folds. The heat example uses 2 folds and the paper uses 5.</td></tr><tr><td><code>candidate_pool_size</code></td><td>Options ranked each round</td><td>256 for heat, 4,096 for the cylinder, 5,000 or 10,000 in the eight-target SAGE runs.</td><td>A larger pool adds scoring work. Only one candidate goes to the heat simulator.</td></tr><tr><td><code>tuning.schedule</code></td><td>When Optuna searches for model settings</td><td><code>initial</code> tunes once, as in the paper.</td><td><code>every_iteration</code> searches before each adaptive proposal. It adds fitting time.</td></tr><tr><td><code>tuning.members</code></td><td>Flows fitted independently in each round</td><td>3 by default and in the heat example.</td><td>More members give more estimates of disagreement and take longer to fit.</td></tr></tbody></table></div>
+<p><strong>Disagreement weight (λ).</strong> Early rounds reward exploration where the models disagree. Later rounds favor promising regions where they agree. The runner adjusts this weight automatically.</p>
+<details><summary>How model tuning and candidate pools work</summary><p><a href="https://doi.org/10.1145/3292500.3330701">Optuna (Akiba et al. 2019)</a> chooses flow settings using the lowest mean held-out negative log-likelihood. Set <code>tuning.trials</code> for search attempts, <code>tuning.folds</code> for validation groups, and <code>tuning.epochs</code> for training passes per fit. Both tuning schedules refit model weights each round. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0#tune-a-neural-spline-flow-with-optuna">See the configurable search space</a>.</p>
+<p>In one SAGE comparison with the same initial simulations, the first new evaluation had five-observable loss 0.126 with 5,000 candidates, 0.080 with 10,000, and 0.340 with 20,000. Pool size changes which candidate wins the ranking, so increasing it need not improve the next simulation.</p></details></section>
+
+<section id="results"><h2 id="paper">Results from the paper</h2><p>The same selection loop was tested on a shock profile, a conservation law, and galaxy observations. Each test used its own physical measure of agreement. The hydrodynamic studies also used an optional simulation-cost penalty (β). The v0.3.0 local runner ranks candidates using density and disagreement alone.</p>
+<article class="result"><h3>Sedov blast wave</h3><p>Each search used 26 simulations. Accounting for predicted cost gave a final recommendation with nearly the same shock-profile error as the search without a cost penalty (0.2855 versus 0.2860) and <strong>54.7% less refinement complexity</strong>. In both searches an earlier simulation had lower error than the final recommendation.</p></article>
+<article class="result"><h3>Rotating cylinder</h3><p>With a moderate cost penalty (β = 0.1), the final recommendation used <strong>22% less refinement complexity</strong> than the best initial run, with 10% higher angular-momentum conservation error. Compared with the no-penalty recommendation, it achieved 5.3% lower error and 2.6% lower complexity. At β = 1, final error was about 6.5 times the β = 0.1 error. The best initial run retained the lowest error.</p></article>
+<article class="result"><h3>SAGE galaxy formation</h3><p>We calibrated the <a href="https://github.com/sage-home/sage-model">Semi-Analytic Galaxy Evolution (SAGE)</a> model against observed galaxy properties. The table compares the adopted simulations with the published manual calibration of <a href="https://doi.org/10.3847/0067-0049/222/2/22">Croton et al. (2016)</a>. Lower loss means closer agreement.</p><div class="table-scroll" role="region" tabindex="0" aria-label="Calibration table"><table><thead><tr><th scope="col">Calibration</th><th scope="col">Loss on original five</th><th scope="col">Loss on all eight</th><th scope="col">Change from published manual calibration</th></tr></thead><tbody><tr><td>Published manual calibration</td><td>0.090493</td><td>0.128536</td><td>Reference</td></tr><tr><td>Five targets (four searches)</td><td>0.043655–0.058346</td><td>0.134188–0.157553</td><td>35.5–51.8% lower on five, higher on eight</td></tr><tr><td>Eight targets, baryon fraction free</td><td>0.082809</td><td>0.104723</td><td>18.5% lower on eight</td></tr><tr><td>Eight targets, baryon fraction fixed at 0.17</td><td>0.094088</td><td>0.100687</td><td>21.7% lower on eight</td></tr></tbody></table></div>
+<p>All four five-target searches improved the fit to those five properties while increasing the overall eight-property loss. Fitting eight targets improved the balance, although the adopted models still predicted too few quenched galaxies. The fixed-baryon eight-target result came from the final test (evaluation 51). The other adopted models came from adaptive evaluations.</p>
+<p><strong>Active learning versus a space-filling design.</strong> Starting from the same 25 simulations for each parameter count, the study compared 25 adaptive evaluations with 25 additional Latin hypercube points. At evaluation 50, active learning reached <strong>42–76% lower loss</strong> than the best of three Latin hypercube designs across the six configurations.</p>
+<details id="reproduce"><summary>Reproduce the SAGE table</summary><p>After installation, rescore the archived outputs. Read <code>L5</code> and <code>L8</code> for the five- and eight-property comparisons. The first row corresponds to the published manual calibration.</p><pre><code>autocalibration reproduce-sage</code></pre><p>The replay uses processed simulation data and runs on CPU. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0/src/autocalibration/paper_sage">Browse versioned data and configurations ↗</a>.</p></details></article></section>
+
+<section id="faq"><h2>Limits, FAQ and citation</h2><p>Interpret each result in the context of its simulator, data, and run budget.</p>
+<ul><li>The reported adaptive searches are individual runs per configuration. The SAGE comparison includes three Latin hypercube controls and uses the small mini-Millennium merger trees.</li><li>The learned distribution is a calibration density shaped by the explored simulations. The study does not propagate observational errors or infer a Bayesian posterior.</li><li>Compare <code>final_recommendation</code> with <code>best_observed</code>. An earlier simulation may have a lower loss.</li><li>Fresh hydrodynamic simulations require Enzo and the case setup. Fresh galaxy simulations require SAGE and merger trees. The archived SAGE replay needs only the released software and bundled outputs.</li></ul>
+<h3>Frequently asked questions</h3>
+<details><summary>My simulator crashed. What happens?</summary><p>The CLI stops and reports the evaluation number and inputs. Completed evaluations are flushed to <code>evaluations.jsonl</code>. Inspect the simulator’s standard error, fix the adapter, and rerun in a new directory. To reuse completed evaluations, convert their inputs and outputs to the initial CSV format.</p></details>
+<details><summary>What if the loss stops improving?</summary><p>Inspect the individual outputs of your best run first. Check their units and target IDs. If the best inputs sit on a bound, reconsider the physically plausible range. If the initial sample leaves much of that range uncovered, consider more initial simulations or more adaptive rounds. An exploratory step can have higher loss than the preceding run.</p></details>
+<details><summary>Can simulations run in parallel?</summary><p>The v0.3.0 local CLI waits for one simulator call to finish before choosing the next point. Your adapter can launch a parallel simulator and wait for its result. You can also generate the initial simulations separately in parallel and import their completed rows.</p></details>
+<details><summary>How does this compare with Bayesian optimization or simulation-based inference?</summary><p>Bayesian optimization typically models a scalar objective and uses an acquisition rule to decide where to evaluate it next. Here the flow learns from simulation inputs paired with their output profiles and proposes parameters for a specified target. Both approaches can guide sequential experiments. Simulation-based inference often aims to quantify posterior uncertainty under a prior and an observation model. This workflow uses its density to guide a search and checks its recommendation in the simulator.</p></details>
+<h3 id="cite">Cite the paper and software</h3><p>Wang, Y., Oh, B. K., Kim, J.-h., &amp; Jo, Y. <cite>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</cite> (in preparation). For reproducibility, also record the software version and data used. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0">Software v0.3.0</a> · <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.3.0/src/autocalibration/paper_sage">Archived SAGE data</a>.</p>
+<details><summary>Copy BibTeX</summary><pre><code>@unpublished{wang_autonomous_calibration,
+  author = {Wang, Yiyang and Oh, Boon Kiat and Kim, Ji-hoon and Jo, Yongseok},
+  title = {Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration},
+  note = {Manuscript in preparation}
+}</code></pre></details></section>
 </main></div>
 <script>
 function revealSection() {
   const previous = {
-    'generic-recipe': 'your-problem', cases: 'pipeline', workflow: 'pipeline',
-    'local-loop': 'initial', 'sage-recipe': 'reproduce', results: 'introduction',
-    boundary: 'pipeline', reproducibility: 'reproduce', existing: 'import', problem: 'adapter'
+    introduction: 'overview', 'generic-recipe': 'your-problem', cases: 'results',
+    workflow: 'pipeline', 'local-loop': 'initial', 'sage-recipe': 'reproduce',
+    boundary: 'faq', reproducibility: 'reproduce', existing: 'import', problem: 'adapter',
+    'getting-started': 'quickstart', 'run-results': 'output'
   };
   const id = location.hash.slice(1);
   const target = document.getElementById(id) || document.getElementById(previous[id]);

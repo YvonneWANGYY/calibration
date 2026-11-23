@@ -15,7 +15,7 @@ class ProjectHomepageTests(unittest.TestCase):
     def test_reader_guide_uses_the_released_flow_workflow(self):
         text = self.index_path.read_text()
         sections = re.findall(r'<section id="([^"]+)"', text)
-        self.assertEqual(sections, ["introduction", "reproduce", "your-problem", "pipeline"])
+        self.assertEqual(sections, ["overview", "quickstart", "your-problem", "settings", "results", "faq"])
         self.assertIn("@v0.3.0", text)
         self.assertNotIn("@v0.2.0", text)
         for term in ("autocalibration reproduce-sage", "best_observed", "final_recommendation",
