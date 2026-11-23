@@ -99,6 +99,21 @@ for each trial’s settings and validation score, and `summary.json` for the bes
 observed result and the separately evaluated final recommendation.
 [Runnable heat problem](guide/heat/flow-problem.json).
 
+### Include computational cost in flow selection
+
+Run `autocalibration run guide/heat/cost-aware.json --output from-cost` after
+installing `.[tuning]`. To enable this in your own flow problem, set
+`"cost": {"metric": "solver_steps", "beta": 0.1}`. Return a finite, positive
+cost under this name for every evaluation and include it in imported data.
+Use a separate name from the targets and parameters. A 500-tree random forest
+predicts the 80th percentile of tree predictions for the log cost ratio relative
+to the lowest-loss observation. Adaptive ranking subtracts beta times that
+prediction. The model uses log coordinates on strictly positive parameter
+ranges and linear coordinates otherwise. Beta zero records costs with ordinary
+selection. The simulator loss and final density ranking are independent of
+the penalty. Inspect measured costs in `evaluations.jsonl` and the adaptive
+score components in `flow_history.jsonl`.
+
 ## Reproduce the SAGE results
 
 Version 0.2.0 includes the processed observations and simulation measurements

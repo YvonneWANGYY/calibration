@@ -101,7 +101,7 @@ def datasets(session):
     return x, c
 
 
-def select(models, target, session, pool_size, weight, final):
+def select(models, target, session, pool_size, weight, final, cost, seed):
     contexts = [(target - mean) / scale for _, mean, scale in models]
     with torch.no_grad():
         parts = []
@@ -113,6 +113,7 @@ def select(models, target, session, pool_size, weight, final):
         scores = torch.stack([model.log_prob(candidates, ctx.expand(pool_size, -1))
                               for (model, _, _), ctx in zip(models, contexts)])
         density = scores.logsumexp(0) - math.log(len(models))
+        info = {}
         if final:
             # Convert log density to physical coordinates (additive constants cancel).
             density += (torch.nn.functional.softplus(candidates)
@@ -125,8 +126,19 @@ def select(models, target, session, pool_size, weight, final):
             def standardize(v):
                 return (v - v.mean()) / v.std(unbiased=False).clamp_min(1e-8)
             score = standardize(density) - weight * standardize(scores.std(0, unbiased=False))
+            if cost and cost["beta"] > 0:
+                from .cost_model import predict_log_ratios
+                ratios, reference = predict_log_ratios(
+                    session, candidates.sigmoid().numpy(), cost["metric"], seed
+                )
+                base = score
+                score = base - cost["beta"] * torch.from_numpy(ratios)
+                selected = int(score.argmax())
+                info = {"cost_metric": cost["metric"], "beta": cost["beta"],
+                        "reference_cost": reference, "predicted_log_cost_ratio": ratios[selected].item(),
+                        "base_score": base[selected].item(), "selection_score": score[selected].item()}
         units = candidates[score.argmax()].sigmoid().tolist()
-    return {p.name: _from_unit(p, u) for p, u in zip(session.parameters, units)}
+    return {p.name: _from_unit(p, u) for p, u in zip(session.parameters, units)}, info
 
 
 def flow_rounds(session, problem, output, config):
@@ -145,10 +157,13 @@ def flow_rounds(session, problem, output, config):
                       for k in range(config["members"])]
             progress = step / max(1, rounds - 1) if not final else 0
             weight = -1 - (2 / 3) * math.log1p(math.expm1(-3) * progress)
-            theta = select(models, target, session, problem["candidate_pool_size"], weight, final)
+            theta, acquisition = select(models, target, session, problem["candidate_pool_size"],
+                                        weight, final, problem.get("cost"), seed)
             kind = "final_recommendation" if final else "adaptive"
             entry = dict(round=step + 1, kind=kind, seed=seed, observations=len(x), parameters=params,
                          trials=trials, disagreement_weight=None if final else weight)
+            if acquisition:
+                entry["acquisition"] = acquisition
             log.write(json.dumps(entry, allow_nan=False) + "\n")
             log.flush()
             yield {"kind": kind, "parameters": theta, "rank": 1}

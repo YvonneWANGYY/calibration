@@ -4,12 +4,17 @@ import math
 import sys
 
 
-def temperature_profile(diffusivity_cm2_s, heater_c, cells=100):
-    """Advance the heat equation on a uniform grid with fixed end temperatures."""
+def integration_steps(diffusivity_cm2_s, cells=100):
     if not math.isfinite(diffusivity_cm2_s) or diffusivity_cm2_s <= 0:
         raise ValueError("diffusivity must be positive and finite")
     dx = 10.0 / cells
-    steps = math.ceil(60 * diffusivity_cm2_s / (0.45 * dx**2))
+    return math.ceil(60 * diffusivity_cm2_s / (0.45 * dx**2))
+
+
+def temperature_profile(diffusivity_cm2_s, heater_c, cells=100):
+    """Advance the heat equation on a uniform grid with fixed end temperatures."""
+    dx = 10.0 / cells
+    steps = integration_steps(diffusivity_cm2_s, cells)
     coefficient = diffusivity_cm2_s * (60 / steps) / dx**2
     temperature = [heater_c] + [20.0] * cells
     for _ in range(steps):
@@ -21,5 +26,9 @@ def temperature_profile(diffusivity_cm2_s, heater_c, cells=100):
 
 
 if __name__ == "__main__":
-    profile = temperature_profile(**json.load(sys.stdin))
-    print(json.dumps({f"temp_{x}cm": profile[x * 10] for x in (1, 3, 5)}))
+    parameters = json.load(sys.stdin)
+    profile = temperature_profile(**parameters)
+    outputs = {f"temp_{x}cm": profile[x * 10] for x in (1, 3, 5)}
+    if "--report-cost" in sys.argv[1:]:
+        outputs["solver_steps"] = integration_steps(parameters["diffusivity_cm2_s"])
+    print(json.dumps(outputs))

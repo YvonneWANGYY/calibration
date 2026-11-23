@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 from . import AdaptiveCalibrationSession, ParameterSpec
+from .cost import check_cost, cost_settings
 
 
 def numeric_map(values, label):
@@ -74,16 +75,21 @@ def proposals(session, problem, output, imported, config):
 def run(problem_path, output):
     problem, session = read_problem(problem_path)
     command = [sys.executable if arg == "{python}" else arg for arg in problem["simulator"]]
+    cost = cost_settings(problem, session)
+    columns = list(session.target_profile)
+    if cost:
+        columns.append(cost["metric"])
     imported = []
     if "initial_data" in problem:
         from .io import load_observations
         imported = load_observations(problem_path.parent / problem["initial_data"],
-                                     [p.name for p in session.parameters], list(session.target_profile))
+                                     [p.name for p in session.parameters], columns)
         if not imported:
             raise ValueError("initial_data contains no observations")
         for row in imported:
             numeric_map(row["parameters"], "imported parameters")
             numeric_map(row["metrics"], "imported metrics")
+            check_cost(row["metrics"], cost)
     method = problem.get("method", "nearest_neighbor")
     config = None
     if method == "neural_spline_flow":
@@ -109,6 +115,7 @@ def run(problem_path, output):
                         stdout=subprocess.PIPE, text=True, check=True,
                     )
                     metrics = numeric_map(json.loads(completed.stdout), "simulator metrics")
+                check_cost(metrics, cost)
                 session.add_observation(theta, metrics)
                 loss = session.losses()[-1]
                 row = dict(point, evaluation=index, metrics=metrics, loss=loss)
