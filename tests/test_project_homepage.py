@@ -54,8 +54,8 @@ class ProjectHomepageTests(unittest.TestCase):
         text = self.profile_path.read_text()
 
         self.assertIn("Fully Autonomous Calibration for Astrophysics", text)
-        self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
-        self.assertIn("https://github.com/YvonneWANGYY/calibration", text)
+        self.assertIn("https://YvonneWANGYY.github.io/fully-autonomous-calibration-for-astrophysical-simulations/", text)
+        self.assertIn("https://github.com/YvonneWANGYY/fully-autonomous-calibration-for-astrophysical-simulations", text)
         self.assertIn("Paper in prep", text)
         self.assertNotIn("new_structured_calibration.pdf", text)
         self.assertIn("Generic interface", text)
@@ -67,7 +67,7 @@ class ProjectHomepageTests(unittest.TestCase):
         normalized_text = re.sub(r"\s+", " ", text)
 
         self.assertIn("Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration", text)
-        self.assertIn("https://YvonneWANGYY.github.io/calibration/", text)
+        self.assertIn("https://YvonneWANGYY.github.io/fully-autonomous-calibration-for-astrophysical-simulations/", text)
         self.assertIn("Paper in prep", text)
         self.assertNotIn("assets/new_structured_calibration.pdf", text)
         self.assertIn("supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py", text)
@@ -79,7 +79,7 @@ class ProjectHomepageTests(unittest.TestCase):
             normalized_text,
         )
         self.assertIn("Autonomy boundary", text)
-        self.assertNotIn("fully-autonomous-calibration", text)
+        self.assertNotIn("github.io/calibration/", text.lower())
 
     def test_library_and_notebook_examples_are_publicly_linked(self):
         readme_text = self.readme_path.read_text()

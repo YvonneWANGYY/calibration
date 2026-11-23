@@ -4,8 +4,8 @@ Adaptive parameter-space exploration for astrophysical calibration, centered on
 a generic recipe interface and demonstrated on Sedov--Taylor, Rotating Cylinder,
 and local SAGE.
 
-- **Project page:** https://YvonneWANGYY.github.io/calibration/
-- **Repository:** https://github.com/YvonneWANGYY/calibration
+- **Project page:** https://YvonneWANGYY.github.io/fully-autonomous-calibration-for-astrophysical-simulations/
+- **Repository:** https://github.com/YvonneWANGYY/fully-autonomous-calibration-for-astrophysical-simulations
 - **Paper status:** Paper in prep
 - **Generic interface:** `supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py`
 - **SAGE example:** `supplement/sage_recipe_launcher/scripts/launch_sage_calibration.py`

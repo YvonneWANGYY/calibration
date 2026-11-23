@@ -168,8 +168,8 @@ require the corresponding Enzo setups.
 
 ## Quick Links
 
-- **Project page:** https://YvonneWANGYY.github.io/calibration/
-- **Repository:** https://github.com/YvonneWANGYY/calibration
+- **Project page:** https://YvonneWANGYY.github.io/fully-autonomous-calibration-for-astrophysical-simulations/
+- **Repository:** https://github.com/YvonneWANGYY/fully-autonomous-calibration-for-astrophysical-simulations
 - **Local recommendation library:** [`src/autocalibration`](src/autocalibration)
 - **SAGE-like notebook:** [notebooks/sage_like_recommendation_loop.ipynb](notebooks/sage_like_recommendation_loop.ipynb)
 - **Generic launcher:** [supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py](supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py)
@@ -299,4 +299,4 @@ python -m py_compile supplement/sage_recipe_launcher/scripts/launch_sage_calibra
 Enable GitHub Pages from the `main` branch and repository root. The public page
 will be:
 
-`https://YvonneWANGYY.github.io/calibration/`
+`https://YvonneWANGYY.github.io/fully-autonomous-calibration-for-astrophysical-simulations/`
