@@ -40,7 +40,7 @@ class ProjectHomepageTests(unittest.TestCase):
         self.assertIn("Paper in prep", text)
         self.assertNotIn("assets/new_structured_calibration.pdf", text)
         self.assertNotIn("--write-pbs", text)
-        self.assertNotIn("fully-autonomous-calibration", text)
+        self.assertIn("autocalibration run my-problem/problem.json", text)
 
     def test_project_page_presents_generic_launcher_as_primary_interface(self):
         text = self.index_path.read_text()

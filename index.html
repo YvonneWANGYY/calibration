@@ -1,445 +1,124 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fully Autonomous Calibration for Astrophysics</title>
-  <meta name="description" content="A project homepage for adaptive parameter-space exploration in astrophysical calibration.">
-  <style>
-    :root {
-      --ink: #14212b;
-      --muted: #5b6670;
-      --paper: #fbfaf7;
-      --panel: #ffffff;
-      --line: #d7ded8;
-      --teal: #0f766e;
-      --blue: #2457a7;
-      --rust: #b6532a;
-      --gold: #b78a21;
-      --shadow: 0 18px 42px rgba(20, 33, 43, 0.14);
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</title>
+<meta name="description" content="Install autocalibration, define a target profile, and connect a simulator or import completed simulations.">
+<link rel="stylesheet" href="guide/style.css?v=5e66c9d58ad9"></head>
+<body><a class="skip" href="#main">Skip to guide</a><header><div class="bar"><a class="brand" href="./">Calibration for Astrophysics</a><a href="https://github.com/YvonneWANGYY/calibration/tree/v0.2.0">Source · v0.2.0 ↗</a></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#install">Install</a><a href="#target">Set up the problem</a><a href="#initial">Choose initial data</a><a href="#new">Start from scratch</a><a href="#import">Use existing runs</a><a href="#adapter">Connect a simulator</a><a href="#run-results">Read the results</a><a href="#paper">Reproduce the paper</a><strong class="research-nav">Project</strong><a href="#cases">Case studies</a><a href="#workflow">Research workflow</a><a href="#results">Research results</a><a href="#reproducibility">Resources</a></nav>
+<main id="main"><div class="intro" id="getting-started"><h1>Getting started</h1>
+<p class="lede">Install the software once and define your calibration problem. Then choose how to start: generate a Latin hypercube design or reuse simulations you have already completed.</p></div>
+<section id="install"><h2>Install and create a project</h2><p>Use Python 3.10 or newer and Git. These shell commands install the public release in a virtual environment on Linux or macOS.</p>
+<pre><code>python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install 'git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'
+mkdir my-problem
+curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/problem.json -o my-problem/problem.json
+curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/simulate.py -o my-problem/simulate.py</code></pre><p>The new directory contains <code>problem.json</code> and a working <code>simulate.py</code>. Run the remaining shell commands from its parent directory.</p></section>
+<section id="target"><h2>Set up the calibration problem</h2><p>Both workflows use the same parameter ranges, target profile, simulator command, and adaptive iteration count in <code>my-problem/problem.json</code>.</p><h3 id="target-profile">What is a target profile?</h3>
+<p>A target profile describes what you want the simulator to reproduce. Choose the output you want to match, where to compare it, and the value you want it to take at each point. Use the same reference for every parameter set, whether your first simulations are imported or newly generated.</p>
+<p>In the paper, <var>θ</var> denotes the inputs you can adjust, <var>c</var> is the set of quantities measured in one simulation, and <var>c</var><sub>★</sub> contains their desired values. A completed simulation gives one pair (<var>θ</var>, <var>c</var>). The paper’s conditional neural spline flow (<a href="https://arxiv.org/abs/1906.04032">Durkan et al. 2019</a>) learns from these pairs and proposes new inputs for the desired <var>c</var><sub>★</sub>. A loss then summarizes how closely a completed run matches the reference.</p>
+<h3>Example: how far does heat travel along a rod?</h3>
+<p>A 10 cm rod starts at 20 °C. A heater holds its left end at a constant temperature while its right end stays at 20 °C. The simulator divides the rod into cells and advances the heat equation for 60 seconds. You can change two inputs: the heater temperature and the thermal diffusivity, which controls how quickly heat spreads.</p>
+<p><strong>Your target is a temperature profile.</strong> At 60 seconds, you want the simulation to match temperatures at three positions along the rod. For this tutorial we generated those target readings using a finer reference simulation (200 cells, diffusivity 0.09 cm²/s, heater 80 °C) and rounded them to two decimals. Every trial uses 100 cells.</p>
+<figure style="margin:1rem 0"><img src="guide/heat/profile.svg" width="720" height="355" style="width:100%;height:auto" alt="The trial temperature falls with distance from the heater and lies below all three target temperatures."></figure>
+<table><thead><tr><th>Distance</th><th>Target at 60 s</th><th>Trial at 60 s</th><th>Output ID</th></tr></thead><tbody><tr><td>1 cm</td><td>65.66 °C</td><td>58.90 °C</td><td><code>temp_1cm</code></td></tr><tr><td>3 cm</td><td>41.68 °C</td><td>30.26 °C</td><td><code>temp_3cm</code></td></tr><tr><td>5 cm</td><td>27.69 °C</td><td>21.35 °C</td><td><code>temp_5cm</code></td></tr></tbody></table>
+<p><strong>Read one trial.</strong> With the heater at 80 °C and diffusivity at 0.04 cm²/s, too little heat reaches the interior. Increasing diffusivity would carry heat farther along the rod. The pipeline tries parameter pairs and compares the three simulated temperatures with the same three targets each time. The local loss is the sum of the three squared temperature differences.</p>
+<p>For your own simulation, choose an output field, a sampling time, and the locations where you want to match it. Put the desired values in <code>problem.json</code> under <code>target</code>. Have your adapter return the simulated values under the same IDs. An imported results table uses those IDs as column names. <a download href="guide/target-profile.csv">Download the rod target profile</a> · <a href="guide/heat/simulate.py">Read the heat solver</a></p>
+<h3>How the paper defines its targets</h3>
+<ul>
+<li><strong>Sedov blast wave.</strong> At a fixed time, compare density, pressure, radial velocity, and transformed specific internal energy with the analytical blast-wave solution on a common radial grid (<a href="https://doi.org/10.1098/rspa.1950.0049">Taylor 1950</a>). Each output is a simulated value minus its analytical reference, so the desired profile is zero at every radius. The reported error accounts for radial bin widths.</li>
+<li><strong>Rotating cylinder.</strong> The study uses the Enzo hydrodynamics code (<a href="https://doi.org/10.1088/0067-0049/211/2/19">Bryan et al. 2014</a>). Track the change in each of the three angular-momentum components at 51 saved times, relative to the initial component value and scaled by the magnitude of the initial axial angular momentum. Conservation gives a target of zero drift in each component at every time.</li>
+<li><strong>SAGE galaxy formation.</strong> The SAGE galaxy-formation model is described by <a href="https://doi.org/10.3847/0067-0049/222/2/22">Croton et al. (2016)</a>. Its calibration targets are observations. For example, the study uses the galaxy number density in stellar-mass bins measured by <a href="https://doi.org/10.1111/j.1365-2966.2008.13348.x">Baldry, Glazebrook &amp; Driver (2008)</a>. The adapter must apply the same bin definitions and logarithmic units to its predictions. The paper’s comparison score averages squared residuals within each observable after scaling by its observed range (mapped to [−1, 1]), then gives each observable equal weight. A densely sampled observable therefore gets the same total weight as a sparsely sampled one. <a href="https://github.com/YvonneWANGYY/calibration/blob/v0.2.0/src/autocalibration/paper_sage/comparison_target.json">Inspect the published SAGE target bins</a>.</li>
+</ul>
+<h3>Set the parameter ranges and run budget</h3>
+<pre id="problem"><code>{
+  &quot;parameters&quot;: [
+    {
+      &quot;name&quot;: &quot;diffusivity_cm2_s&quot;,
+      &quot;lower&quot;: 0.03,
+      &quot;upper&quot;: 0.15
+    },
+    {
+      &quot;name&quot;: &quot;heater_c&quot;,
+      &quot;lower&quot;: 60,
+      &quot;upper&quot;: 100
     }
+  ],
+  &quot;target&quot;: {
+    &quot;temp_1cm&quot;: 65.66,
+    &quot;temp_3cm&quot;: 41.68,
+    &quot;temp_5cm&quot;: 27.69
+  },
+  &quot;simulator&quot;: [
+    &quot;{python}&quot;,
+    &quot;simulate.py&quot;
+  ],
+  &quot;initial_samples&quot;: 8,
+  &quot;adaptive_steps&quot;: 4,
+  &quot;candidate_pool_size&quot;: 256,
+  &quot;seed&quot;: 42
+}</code></pre>
+<p><code>adaptive_steps</code> is the number of new adaptive evaluations in either workflow. <code>initial_samples</code> sets the size of a newly generated design. When importing data, the rows in your CSV supply the initial evaluations.</p></section>
+<section id="initial"><h2>Choose your initial data</h2><div class="route"><a href="#new">I need an initial design →</a><a href="#import">I have completed simulations →</a></div></section>
+<section id="new"><h2>Start from scratch</h2><p>Latin hypercube sampling distributes points across the full range of each input by sampling once per stratum (<a href="https://doi.org/10.1080/00401706.1979.10489755">McKay, Beckman &amp; Conover 1979</a>). With the example settings above, eight initial points and four adaptive proposals require twelve simulator calls. It ranks candidates using nearby measured losses and parameter-space distance.</p>
+<pre><code>autocalibration run my-problem/problem.json --output my-run</code></pre>
+<p>Use a fresh output directory for each run. <code>candidate_pool_size</code> controls how many parameter sets are considered per adaptive step. Only the selected set goes to the simulator.</p></section>
+<section id="import"><h2>Use existing simulations</h2><p>Use the Python session API when you already have parameter values and measured outputs. The existing points can come from any design. Include one column for each parameter and one for each target ID. Download the example CSV as <code>initial.csv</code> alongside <code>my-problem/</code>.</p>
+<p><a href="guide/initial.csv" download>Download initial simulations CSV</a></p>
+<p>Save the following as <code>continue_calibration.py</code> beside the CSV and run <code>python continue_calibration.py</code>. It loads two completed evaluations and runs four new simulations through the same adapter. Append each completed row to the CSV to reuse it next time.</p>
+<pre id="existing"><code>import csv
+import json
+from pathlib import Path
+import subprocess
+import sys
 
-    * {
-      box-sizing: border-box;
-    }
+from autocalibration import AdaptiveCalibrationSession, ParameterSpec
 
-    html {
-      scroll-behavior: smooth;
-    }
+project = Path(&quot;my-problem&quot;)
+problem = json.loads((project / &quot;problem.json&quot;).read_text())
+params = [ParameterSpec(**p) for p in problem[&quot;parameters&quot;]]
+target = problem[&quot;target&quot;]
+session = AdaptiveCalibrationSession.from_files(
+    params, target, metrics_file=&quot;initial.csv&quot;, metric_columns=list(target)
+)
+command = [sys.executable if arg == &quot;{python}&quot; else arg for arg in problem[&quot;simulator&quot;]]
 
-    body {
-      margin: 0;
-      color: var(--ink);
-      background: var(--paper);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.55;
-    }
+with open(&quot;initial.csv&quot;, newline=&quot;&quot;) as src:
+    columns = csv.DictReader(src).fieldnames
+with open(&quot;initial.csv&quot;, &quot;a&quot;, newline=&quot;&quot;) as dest:
+    writer = csv.DictWriter(dest, fieldnames=columns)
+    for step in range(problem[&quot;adaptive_steps&quot;]):
+        point = session.recommend(1, candidate_pool_size=problem[&quot;candidate_pool_size&quot;],
+                                  seed=problem[&quot;seed&quot;] + len(session.observations))[0]
+        theta = point[&quot;parameters&quot;]
+        result = subprocess.run(command, cwd=project, input=json.dumps(theta),
+                                capture_output=True, text=True, check=True)
+        metrics = json.loads(result.stdout)
+        session.add_observation(theta, metrics)
+        writer.writerow({**theta, **{name: metrics[name] for name in target}})
+        dest.flush()
 
-    a {
-      color: inherit;
-    }
+losses = session.losses()
+best = losses.index(min(losses))
+print(session.observations[best].parameters, losses[best])</code></pre>
+</section>
+<section id="adapter"><h2>Connect your simulator</h2><p>The adapter is the only model-specific piece. For each evaluation, the runner starts the configured command in the problem directory. The command reads a JSON parameter object on standard input, runs the model, and writes a JSON object of predictions on standard output.</p>
+<h3>Try one evaluation</h3><pre><code>printf '%s\n' '{"diffusivity_cm2_s": 0.04, "heater_c": 80}' | python my-problem/simulate.py</code></pre>
+<p>The example returns approximately <code>{"temp_1cm": 58.896, "temp_3cm": 30.263, "temp_5cm": 21.348}</code>. For your simulator, translate parameters into its native input format, wait for it to finish, and extract a finite value for each target ID. Send logs to standard error and exit with a nonzero status if the simulation fails.</p></section>
+<section id="run-results"><h2>Read the results</h2><p>After a CLI run, inspect <code>my-run/summary.json</code> for the best evaluated parameters, their predictions, and the measured loss. <code>evaluations.jsonl</code> has one record per completed simulation, including those completed before an interruption.</p><p>The local runner sums squared differences across target IDs. If observables have different scales or units, scale predictions and targets consistently before comparing them. The adaptive acquisition score ranks candidates before simulation; the measured loss tells you how well a completed simulation matches the target.</p></section>
+<section id="paper"><h2>Reproduce the SAGE paper results</h2><p>The bundled SAGE study has its own commands. Replay the reported model selection and print the five- and eight-observable losses with:</p><pre><code>autocalibration reproduce-sage</code></pre><p>To try the paper’s conditional neural spline flow (NSF), install the flow extra and run the short first-round SAGE example:</p>
+<pre><code>python -m pip install 'fully-autonomous-calibration[flow] @ git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'
+autocalibration propose-sage --smoke --output sage-first-proposal</code></pre><p>This fits 20 ensemble members and ranks 64 draws using the archived SAGE initial design. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.2.0/src/autocalibration/paper_sage">Study data and configurations ↗</a></p></section>
 
-    .hero {
-      position: relative;
-      min-height: 82vh;
-      display: flex;
-      align-items: center;
-      background-image: url("assets/sage8-proposal-20iter-trajectory-comparison.png");
-      background-size: cover;
-      background-position: center;
-      isolation: isolate;
-    }
-
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(251, 250, 247, 0.88);
-      z-index: -1;
-    }
-
-    .hero-inner,
-    .section-inner {
-      width: min(1120px, calc(100% - 40px));
-      margin: 0 auto;
-    }
-
-    .eyebrow {
-      color: var(--teal);
-      font-size: 0.78rem;
-      font-weight: 800;
-      letter-spacing: 0;
-      text-transform: uppercase;
-    }
-
-    h1,
-    h2,
-    h3 {
-      margin: 0;
-      line-height: 1.1;
-      letter-spacing: 0;
-    }
-
-    h1 {
-      max-width: 980px;
-      margin-top: 12px;
-      font-size: clamp(2.4rem, 6vw, 4.9rem);
-    }
-
-    h2 {
-      font-size: clamp(1.85rem, 3.2vw, 3rem);
-    }
-
-    h3 {
-      font-size: 1.12rem;
-    }
-
-    .lead {
-      max-width: 760px;
-      margin: 22px 0 0;
-      color: #263640;
-      font-size: clamp(1.05rem, 1.6vw, 1.28rem);
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 28px;
-    }
-
-    .button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 42px;
-      padding: 10px 14px;
-      border: 1px solid var(--ink);
-      border-radius: 8px;
-      background: var(--ink);
-      color: white;
-      font-weight: 750;
-      text-decoration: none;
-    }
-
-    .button.secondary {
-      background: rgba(255, 255, 255, 0.68);
-      color: var(--ink);
-    }
-
-    .quick-stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 34px;
-      max-width: 900px;
-    }
-
-    .stat {
-      border: 1px solid rgba(20, 33, 43, 0.16);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.74);
-      padding: 13px;
-      min-height: 92px;
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 1.38rem;
-      line-height: 1.1;
-    }
-
-    .stat span {
-      display: block;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 0.9rem;
-    }
-
-    section {
-      padding: 74px 0;
-    }
-
-    section:nth-of-type(even) {
-      background: #eef3f0;
-    }
-
-    .section-head {
-      display: grid;
-      grid-template-columns: minmax(0, 0.85fr) minmax(260px, 0.55fr);
-      gap: 28px;
-      align-items: end;
-      margin-bottom: 28px;
-    }
-
-    .section-head p {
-      margin: 0;
-      color: var(--muted);
-    }
-
-    .case-grid,
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .card,
-    .callout,
-    .code-panel {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--panel);
-      box-shadow: 0 12px 24px rgba(20, 33, 43, 0.06);
-    }
-
-    .card {
-      padding: 22px;
-      min-height: 214px;
-    }
-
-    .card .tag {
-      display: inline-block;
-      margin-bottom: 14px;
-      color: white;
-      background: var(--blue);
-      border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 0.78rem;
-      font-weight: 800;
-    }
-
-    .card:nth-child(2) .tag {
-      background: var(--rust);
-    }
-
-    .card:nth-child(3) .tag {
-      background: var(--teal);
-    }
-
-    .card p,
-    .callout p {
-      color: var(--muted);
-      margin: 12px 0 0;
-    }
-
-    .workflow {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 28px;
-    }
-
-    .step {
-      min-height: 124px;
-      border-top: 4px solid var(--gold);
-      border-radius: 8px;
-      background: white;
-      padding: 14px;
-      box-shadow: 0 10px 22px rgba(20, 33, 43, 0.06);
-    }
-
-    .step span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.82rem;
-      font-weight: 800;
-    }
-
-    .split {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
-      gap: 24px;
-      align-items: center;
-    }
-
-    .figure-frame {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: white;
-      box-shadow: var(--shadow);
-    }
-
-    .figure-frame img {
-      display: block;
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      object-fit: contain;
-      background: #f8faf9;
-    }
-
-    .caption {
-      margin: 0;
-      padding: 11px 14px;
-      color: var(--muted);
-      border-top: 1px solid var(--line);
-      font-size: 0.9rem;
-    }
-
-    .callout {
-      padding: 24px;
-      border-left: 6px solid var(--teal);
-    }
-
-    .code-panel {
-      overflow: hidden;
-      margin-top: 18px;
-    }
-
-    .edit-note {
-      margin-top: 14px;
-      border-left: 5px solid var(--rust);
-      border-radius: 8px;
-      background: #fff8f4;
-      padding: 13px 15px;
-      color: #5d463b;
-      font-size: 0.94rem;
-    }
-
-    .edit-note strong {
-      color: var(--rust);
-    }
-
-    pre {
-      margin: 0;
-      padding: 18px;
-      overflow-x: auto;
-      color: #edf7f3;
-      background: #17242b;
-      font-size: 0.92rem;
-      line-height: 1.45;
-    }
-
-    .resource-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-      margin-top: 22px;
-    }
-
-    .resource-card {
-      display: flex;
-      min-height: 172px;
-      flex-direction: column;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: white;
-      padding: 18px;
-      color: var(--ink);
-      text-decoration: none;
-      box-shadow: 0 10px 22px rgba(20, 33, 43, 0.06);
-      transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
-    }
-
-    .resource-card:hover,
-    .resource-card:focus-visible {
-      border-color: rgba(36, 87, 167, 0.45);
-      box-shadow: 0 14px 28px rgba(20, 33, 43, 0.1);
-      transform: translateY(-1px);
-      outline: none;
-    }
-
-    .resource-kicker {
-      color: var(--teal);
-      font-size: 0.76rem;
-      font-weight: 850;
-      text-transform: uppercase;
-    }
-
-    .resource-title {
-      display: block;
-      margin-top: 8px;
-      color: var(--ink);
-      font-size: 1.18rem;
-      font-weight: 850;
-      line-height: 1.18;
-    }
-
-    .resource-summary {
-      margin: 10px 0 16px;
-      color: var(--muted);
-      font-size: 0.94rem;
-    }
-
-    .resource-action {
-      margin-top: auto;
-      color: var(--blue);
-      font-weight: 850;
-    }
-
-    footer {
-      padding: 34px 0;
-      color: #f4f7f5;
-      background: var(--ink);
-    }
-
-    footer a {
-      color: #dff4ef;
-    }
-
-    @media (max-width: 860px) {
-      .hero {
-        min-height: 88vh;
-      }
-
-      .quick-stats,
-      .section-head,
-      .case-grid,
-      .feature-grid,
-      .workflow,
-      .split,
-      .resource-grid {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        font-size: 2.35rem;
-      }
-
-      section {
-        padding: 52px 0;
-      }
-    }
-  </style>
-</head>
-<body>
-  <header class="hero">
-    <div class="hero-inner">
-      <div class="eyebrow">Adaptive parameter-space exploration</div>
-      <h1>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</h1>
-      <p class="lead">
-        A generic recipe-driven active-learning interface for calibration
-        problems. The reusable launcher materializes target, parameter-space,
-        simulator-wrapper, proposal-model, and output settings into a
-        reproducible adaptive exploration loop.
-      </p>
-      <div class="actions" aria-label="Project links">
-        <a class="button" href="guide/">Getting started</a>
-        <a class="button secondary" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/generic_recipe_launcher/scripts/launch_adaptive_calibration.py">Generic launcher</a>
-        <a class="button secondary" href="https://github.com/YvonneWANGYY/calibration/blob/main/supplement/generic_recipe_launcher/recipes/adaptive_calibration_template.json">Generic recipe</a>
-        <span class="button secondary" aria-label="Paper status">Paper in prep</span>
-        <a class="button secondary" href="https://github.com/YvonneWANGYY/calibration">GitHub repository</a>
-        <a class="button secondary" href="#sage-recipe">SAGE example</a>
-      </div>
-      <div class="quick-stats" aria-label="Project summary">
-        <div class="stat"><strong>1</strong><span>generic recipe interface for target, bounds, wrapper, proposal, and outputs</span></div>
-        <div class="stat"><strong>3</strong><span>worked examples spanning Sedov--Taylor, Rotating Cylinder, and local SAGE</span></div>
-        <div class="stat"><strong>8</strong><span>SAGE observational families in the main semi-analytic calibration</span></div>
-        <div class="stat"><strong>0.735</strong><span>best stored SAGE observational R2 in the worked example comparison</span></div>
-      </div>
-    </div>
-  </header>
-
-  <main>
     <section id="generic-recipe">
       <div class="section-inner split">
         <div>
-          <div class="eyebrow">Primary public interface</div>
+
           <h2>Generic recipe launcher</h2>
           <p>
-            The generic launcher is the main reusable artifact on this GitHub
-            Pages homepage. A recipe declares the science target, parameter
+            A recipe declares the science target, parameter
             space, initial design, simulator wrapper, proposal model, run
             controls, and output identity, then the launcher materializes a
             dry-run command and optional manifest that can be wrapped by the
@@ -556,7 +235,7 @@ next_runs = session.recommend(n=2, seed=5)</code></pre>
             <h2>A recipe materializes the run, then the loop advances itself.</h2>
           </div>
           <p>
-            The reusable engine combines CRQSF proposal learning, acquisition,
+            The reusable engine combines conditional neural spline flow (NSF) proposal learning, acquisition,
             simulator execution, and bookkeeping into a closed-loop calibration
             run after the case-specific recipe is specified.
           </p>
@@ -564,7 +243,7 @@ next_runs = session.recommend(n=2, seed=5)</code></pre>
         <div class="workflow" aria-label="Calibration workflow">
           <div class="step"><span>01</span><strong>Recipe</strong><p>Target, bounds, wrapper interface, and initial design.</p></div>
           <div class="step"><span>02</span><strong>Preflight</strong><p>Validate paths, strategy, and output plan.</p></div>
-          <div class="step"><span>03</span><strong>CRQSF proposal</strong><p>Fit a target-conditioned learned proposal from evaluated rows.</p></div>
+          <div class="step"><span>03</span><strong>NSF proposal</strong><p>Fit a target-conditioned learned proposal from evaluated rows.</p></div>
           <div class="step"><span>04</span><strong>Acquisition</strong><p>Select the next parameter vector with ranking, MAP, or sampling.</p></div>
           <div class="step"><span>05</span><strong>Simulation</strong><p>Run the astrophysical model through the case wrapper.</p></div>
           <div class="step"><span>06</span><strong>Update</strong><p>Append metrics, manifests, and history for the next iteration.</p></div>
@@ -580,7 +259,7 @@ next_runs = session.recommend(n=2, seed=5)</code></pre>
           <p>
             SAGE is the included example implementation of the generic recipe interface.
             Its recipe packages the target JSON, initial LHS summary,
-            parameter range, CRQSF root, acquisition strategy, and output naming
+            parameter range, NSF root, acquisition strategy, and output naming
             into one editable case-study template.
           </p>
           <div class="code-panel" aria-label="SAGE launcher dry-run command">
@@ -630,7 +309,7 @@ next_runs = session.recommend(n=2, seed=5)</code></pre>
             </article>
             <article class="card">
               <h3>Ensemble MAP</h3>
-              <p>Five-member CRQSF ensemble MAP reaches R2 = 0.718626 at iteration 14.</p>
+              <p>Five-member NSF ensemble MAP reaches R2 = 0.718626 at iteration 14.</p>
             </article>
             <article class="card">
               <h3>Initial reference</h3>
@@ -717,16 +396,22 @@ next_runs = session.recommend(n=2, seed=5)</code></pre>
         </div>
       </div>
     </section>
-  </main>
 
-  <footer>
-    <div class="section-inner">
-      <strong>Fully Autonomous Calibration for Astrophysics</strong>
-      <p>
-        Project repository:
-        <a href="https://github.com/YvonneWANGYY/calibration">github.com/YvonneWANGYY/calibration</a>
-      </p>
-    </div>
-  </footer>
-</body>
-</html>
+</main></div>
+<script>
+if (window.isSecureContext && navigator.clipboard) {
+  document.querySelectorAll('pre').forEach(pre => {
+    const wrap = document.createElement('div');
+    wrap.className = 'snippet';
+    pre.before(wrap);
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = 'Copy'; button.setAttribute('aria-label','Copy code');
+    button.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(pre.textContent); button.textContent = 'Copied'; }
+      catch { button.textContent = 'Select code to copy'; }
+      setTimeout(() => {button.textContent = 'Copy';}, 1800);
+    });
+    wrap.append(button, pre);
+  });
+}
+</script></body></html>

@@ -60,3 +60,16 @@ th { border-top: 2px solid var(--green); color: var(--green); }
   .lede { max-width: 100%; }
   .route { grid-template-columns: 1fr; }
 }
+
+.research-nav { border-top: 1px solid var(--rule); padding-top: .8rem; margin-top: .8rem; }
+.toc { max-height: calc(100vh - 3rem); overflow-y: auto; }
+.section-inner img { max-width: 100%; height: auto; }
+.case-grid, .feature-grid, .resource-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 1rem; }
+.card, .resource-card, .callout { padding: 1rem; border: 1px solid var(--rule); }
+.resource-card { display: grid; align-content: start; gap: .4rem; text-decoration: none; }
+.resource-title { font-weight: 700; }
+.resource-action { text-decoration: underline; }
+.eyebrow, .tag, .resource-kicker { color: var(--red); font-size: .85rem; }
+.workflow .step { margin: .8rem 0; }
+.step > span { margin-right: .6rem; }
+@media (max-width: 800px) { .toc { max-height: none; } }
