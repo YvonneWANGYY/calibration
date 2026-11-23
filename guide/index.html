@@ -13,19 +13,19 @@
 <pre><code>python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install 'git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'
-autocalibration init my-problem</code></pre><p>The new directory contains <code>problem.json</code> and a working <code>simulate.py</code>. Run the remaining shell commands from its parent directory.</p></section>
+mkdir my-problem
+curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/problem.json -o my-problem/problem.json
+curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/simulate.py -o my-problem/simulate.py</code></pre><p>The new directory contains <code>problem.json</code> and a working <code>simulate.py</code>. Run the remaining shell commands from its parent directory.</p></section>
 <section id="target"><h2>Set up the calibration problem</h2><p>Both workflows use the same parameter ranges, target profile, simulator command, and adaptive iteration count in <code>my-problem/problem.json</code>.</p><h3 id="target-profile">What is a target profile?</h3>
 <p>A target profile describes what you want the simulator to reproduce. Choose the output you want to match, where to compare it, and the value you want it to take at each point. Use the same reference for every parameter set, whether your first simulations are imported or newly generated.</p>
 <p>In the paper, <var>θ</var> denotes the inputs you can adjust, <var>c</var> is the set of quantities measured in one simulation, and <var>c</var><sub>★</sub> contains their desired values. A completed simulation gives one pair (<var>θ</var>, <var>c</var>). The paper’s conditional neural spline flow (<a href="https://arxiv.org/abs/1906.04032">Durkan et al. 2019</a>) learns from these pairs and proposes new inputs for the desired <var>c</var><sub>★</sub>. A loss then summarizes how closely a completed run matches the reference.</p>
-<h3>Example: match a signal at two times</h3>
-<p>Imagine measuring a signal as it fades. At time 1 you measure <strong>0.8</strong>. At time 2 you measure <strong>0.5</strong>. Together, these readings are your target profile. You want to find a starting amplitude and a decay rate that make your simulator reproduce both readings.</p>
-<p><strong>What you enter once.</strong> In <code>problem.json</code>, give each reading a name. Here, <code>signal_t1</code> means “signal at time 1” and <code>signal_t2</code> means “signal at time 2.” The target line is:</p>
-<pre><code>"target": {"signal_t1": 0.8, "signal_t2": 0.5}</code></pre>
-<p><strong>What happens on each run.</strong> The pipeline sends the simulator a trial amplitude and decay rate. For example, with amplitude <code>1</code> and rate <code>0.3</code>, the starter predicts a signal of about <strong>0.741</strong> at time 1 and <strong>0.549</strong> at time 2. Your simulator returns those predictions under the same names:</p>
-<pre><code>{"signal_t1": 0.74082, "signal_t2": 0.54881}</code></pre>
-<p><strong>How the pipeline uses the result.</strong> It compares 0.741 with 0.8 and 0.549 with 0.5. This run predicts too little signal at time 1 and too much at time 2. The pipeline uses these results to choose another amplitude and decay rate to try. Your two target readings stay fixed.</p>
-<details><summary>How is this run scored?</summary><p>The starter squares each difference and adds them: <code>(0.74082 − 0.8)² + (0.54881 − 0.5)² ≈ 0.00589</code>. A smaller score means closer agreement. A score of zero means both readings match exactly.</p></details>
-<p>For your own simulator, choose names that identify what you measure and where. Use those names in the target and in every simulator response. If you import completed runs, use them as the output column names in your CSV. <a download href="target-profile.csv">See the two example readings as a CSV</a>.</p>
+<h3>Example: how far does heat travel along a rod?</h3>
+<p>A 10 cm rod starts at 20 °C. A heater holds its left end at a constant temperature while its right end stays at 20 °C. The simulator divides the rod into cells and advances the heat equation for 60 seconds. You can change two inputs: the heater temperature and the thermal diffusivity, which controls how quickly heat spreads.</p>
+<p><strong>Your target is a temperature profile.</strong> At 60 seconds, you want the simulation to match temperatures at three positions along the rod. For this tutorial we generated those target readings using a finer reference simulation (200 cells, diffusivity 0.09 cm²/s, heater 80 °C) and rounded them to two decimals. Every trial uses 100 cells.</p>
+<figure style="margin:1rem 0"><img src="heat/profile.svg" width="720" height="355" style="width:100%;height:auto" alt="The trial temperature falls with distance from the heater and lies below all three target temperatures."></figure>
+<table><thead><tr><th>Distance</th><th>Target at 60 s</th><th>Trial at 60 s</th><th>Output ID</th></tr></thead><tbody><tr><td>1 cm</td><td>65.66 °C</td><td>58.90 °C</td><td><code>temp_1cm</code></td></tr><tr><td>3 cm</td><td>41.68 °C</td><td>30.26 °C</td><td><code>temp_3cm</code></td></tr><tr><td>5 cm</td><td>27.69 °C</td><td>21.35 °C</td><td><code>temp_5cm</code></td></tr></tbody></table>
+<p><strong>Read one trial.</strong> With the heater at 80 °C and diffusivity at 0.04 cm²/s, too little heat reaches the interior. Increasing diffusivity would carry heat farther along the rod. The pipeline tries parameter pairs and compares the three simulated temperatures with the same three targets each time. The local loss is the sum of the three squared temperature differences.</p>
+<p>For your own simulation, choose an output field, a sampling time, and the locations where you want to match it. Put the desired values in <code>problem.json</code> under <code>target</code>. Have your adapter return the simulated values under the same IDs. An imported results table uses those IDs as column names. <a download href="target-profile.csv">Download the rod target profile</a> · <a href="heat/simulate.py">Read the heat solver</a></p>
 <h3>How the paper defines its targets</h3>
 <ul>
 <li><strong>Sedov blast wave.</strong> At a fixed time, compare density, pressure, radial velocity, and transformed specific internal energy with the analytical blast-wave solution on a common radial grid (<a href="https://doi.org/10.1098/rspa.1950.0049">Taylor 1950</a>). Each output is a simulated value minus its analytical reference, so the desired profile is zero at every radius. The reported error accounts for radial bin widths.</li>
@@ -35,11 +35,26 @@ autocalibration init my-problem</code></pre><p>The new directory contains <code>
 <h3>Set the parameter ranges and run budget</h3>
 <pre id="problem"><code>{
   &quot;parameters&quot;: [
-    {&quot;name&quot;: &quot;amplitude&quot;, &quot;lower&quot;: 0.5, &quot;upper&quot;: 2.0},
-    {&quot;name&quot;: &quot;rate&quot;, &quot;lower&quot;: 0.1, &quot;upper&quot;: 1.0}
+    {
+      &quot;name&quot;: &quot;diffusivity_cm2_s&quot;,
+      &quot;lower&quot;: 0.03,
+      &quot;upper&quot;: 0.15
+    },
+    {
+      &quot;name&quot;: &quot;heater_c&quot;,
+      &quot;lower&quot;: 60,
+      &quot;upper&quot;: 100
+    }
   ],
-  &quot;target&quot;: {&quot;signal_t1&quot;: 0.8, &quot;signal_t2&quot;: 0.5},
-  &quot;simulator&quot;: [&quot;{python}&quot;, &quot;simulate.py&quot;],
+  &quot;target&quot;: {
+    &quot;temp_1cm&quot;: 65.66,
+    &quot;temp_3cm&quot;: 41.68,
+    &quot;temp_5cm&quot;: 27.69
+  },
+  &quot;simulator&quot;: [
+    &quot;{python}&quot;,
+    &quot;simulate.py&quot;
+  ],
   &quot;initial_samples&quot;: 8,
   &quot;adaptive_steps&quot;: 4,
   &quot;candidate_pool_size&quot;: 256,
@@ -90,8 +105,8 @@ best = losses.index(min(losses))
 print(session.observations[best].parameters, losses[best])</code></pre>
 </section>
 <section id="adapter"><h2>Connect your simulator</h2><p>The adapter is the only model-specific piece. For each evaluation, the runner starts the configured command in the problem directory. The command reads a JSON parameter object on standard input, runs the model, and writes a JSON object of predictions on standard output.</p>
-<h3>Try one evaluation</h3><pre><code>printf '%s\n' '{"amplitude": 1, "rate": 0.3}' | python my-problem/simulate.py</code></pre>
-<p>The example returns approximately <code>{"signal_t1": 0.740818, "signal_t2": 0.548812}</code>. For your simulator, translate parameters into its native input format, wait for it to finish, and extract a finite value for each target ID. Send logs to standard error and exit with a nonzero status if the simulation fails.</p></section>
+<h3>Try one evaluation</h3><pre><code>printf '%s\n' '{"diffusivity_cm2_s": 0.04, "heater_c": 80}' | python my-problem/simulate.py</code></pre>
+<p>The example returns approximately <code>{"temp_1cm": 58.896, "temp_3cm": 30.263, "temp_5cm": 21.348}</code>. For your simulator, translate parameters into its native input format, wait for it to finish, and extract a finite value for each target ID. Send logs to standard error and exit with a nonzero status if the simulation fails.</p></section>
 <section id="results"><h2>Read the results</h2><p>After a CLI run, inspect <code>my-run/summary.json</code> for the best evaluated parameters, their predictions, and the measured loss. <code>evaluations.jsonl</code> has one record per completed simulation, including those completed before an interruption.</p><p>The local runner sums squared differences across target IDs. If observables have different scales or units, scale predictions and targets consistently before comparing them. The adaptive acquisition score ranks candidates before simulation; the measured loss tells you how well a completed simulation matches the target.</p></section>
 <section id="paper"><h2>Reproduce the SAGE paper results</h2><p>The bundled SAGE study has its own commands. Replay the reported model selection and print the five- and eight-observable losses with:</p><pre><code>autocalibration reproduce-sage</code></pre><p>To try the paper’s conditional neural spline flow (NSF), install the flow extra and run the short first-round SAGE example:</p>
 <pre><code>python -m pip install 'fully-autonomous-calibration[flow] @ git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'

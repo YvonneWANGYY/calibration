@@ -1,0 +1,27 @@
+{
+  "parameters": [
+    {
+      "name": "diffusivity_cm2_s",
+      "lower": 0.03,
+      "upper": 0.15
+    },
+    {
+      "name": "heater_c",
+      "lower": 60,
+      "upper": 100
+    }
+  ],
+  "target": {
+    "temp_1cm": 65.66,
+    "temp_3cm": 41.68,
+    "temp_5cm": 27.69
+  },
+  "simulator": [
+    "{python}",
+    "simulate.py"
+  ],
+  "initial_samples": 8,
+  "adaptive_steps": 4,
+  "candidate_pool_size": 256,
+  "seed": 42
+}

@@ -1,3 +1,4 @@
-metric_id,observable,coordinate,value
-signal_t1,signal,1,0.8
-signal_t2,signal,2,0.5
+metric_id,observable,coordinate_cm,target_c
+temp_1cm,temperature,1,65.66
+temp_3cm,temperature,3,41.68
+temp_5cm,temperature,5,27.69
