@@ -34,7 +34,7 @@ h2 { margin: 0 0 1rem; color: var(--green); font-size: clamp(2rem, 3.5vw, 3rem);
 h3 { color: var(--ink); font-size: 1.55rem; margin: 1.9rem 0 .7rem; }
 p { margin: .65rem 0 1rem; }
 .route { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
-.route a { padding: 1.05rem 1.15rem; background: var(--green); color: white; text-decoration: none; border-bottom: 4px solid var(--red); }
+.route a { padding: 1.05rem 1.15rem; background: var(--green); color: white; text-decoration: none; }
 .route a:hover { text-decoration: underline; }
 code, pre { font-family: ui-monospace, monospace; font-size: .9em; }
 main :not(pre) > code { color: #83242c; overflow-wrap: anywhere; }
