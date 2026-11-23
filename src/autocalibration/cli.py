@@ -41,7 +41,12 @@ def read_problem(path):
     command = problem["simulator"]
     if not isinstance(command, list) or not command or not all(isinstance(arg, str) and arg for arg in command):
         raise ValueError("simulator must be a nonempty list of command arguments")
-    for key, minimum in (("initial_samples", 1), ("adaptive_steps", 0), ("candidate_pool_size", 1)):
+    if "initial_data" in problem and "initial_samples" in problem:
+        raise ValueError("choose initial_data or initial_samples")
+    counts = {"adaptive_steps": 0, "candidate_pool_size": 1}
+    if "initial_data" not in problem:
+        counts["initial_samples"] = 1
+    for key, minimum in counts.items():
         if type(problem[key]) is not int or problem[key] < minimum:
             raise ValueError(f"{key} must be an integer >= {minimum}")
     if type(problem["seed"]) is not int:
@@ -49,11 +54,19 @@ def read_problem(path):
     return problem, session
 
 
-def proposals(session, problem):
-    initial = problem["initial_samples"]
+def proposals(session, problem, output, imported, config):
+    initial = problem.get("initial_samples", 0)
     pool = problem["candidate_pool_size"]
     seed = problem["seed"]
-    yield from session.recommend(initial, candidate_pool_size=max(pool, initial), seed=seed)
+    if imported:
+        for row in imported:
+            yield {"kind": "imported", **row}
+    else:
+        yield from session.recommend(initial, candidate_pool_size=max(pool, initial), seed=seed)
+    if config is not None:
+        from .flow_search import flow_rounds
+        yield from flow_rounds(session, problem, output, config)
+        return
     for step in range(problem["adaptive_steps"]):
         yield from session.recommend(1, candidate_pool_size=pool, seed=seed + step + 1)
 
@@ -61,18 +74,41 @@ def proposals(session, problem):
 def run(problem_path, output):
     problem, session = read_problem(problem_path)
     command = [sys.executable if arg == "{python}" else arg for arg in problem["simulator"]]
+    imported = []
+    if "initial_data" in problem:
+        from .io import load_observations
+        imported = load_observations(problem_path.parent / problem["initial_data"],
+                                     [p.name for p in session.parameters], list(session.target_profile))
+        if not imported:
+            raise ValueError("initial_data contains no observations")
+        for row in imported:
+            numeric_map(row["parameters"], "imported parameters")
+            numeric_map(row["metrics"], "imported metrics")
+    method = problem.get("method", "nearest_neighbor")
+    config = None
+    if method == "neural_spline_flow":
+        try:
+            from .flow_search import settings
+        except ModuleNotFoundError as exc:
+            raise ValueError("flow tuning requires the [tuning] installation extra") from exc
+        config = settings(problem, len(imported) or problem.get("initial_samples", 0))
+    elif method != "nearest_neighbor" or "tuning" in problem:
+        raise ValueError("select method neural_spline_flow to use tuning")
     output.mkdir(parents=True, exist_ok=False)
     (output / "problem.json").write_text(json.dumps(problem, indent=2) + "\n")
     best = None
     with (output / "evaluations.jsonl").open("w") as history:
-        for index, point in enumerate(proposals(session, problem), start=1):
+        for index, point in enumerate(proposals(session, problem, output, imported, config), start=1):
             theta = point["parameters"]
             try:
-                completed = subprocess.run(
-                    command, cwd=problem_path.resolve().parent, input=json.dumps(theta),
-                    stdout=subprocess.PIPE, text=True, check=True,
-                )
-                metrics = numeric_map(json.loads(completed.stdout), "simulator metrics")
+                if point["kind"] == "imported":
+                    metrics = point["metrics"]
+                else:
+                    completed = subprocess.run(
+                        command, cwd=problem_path.resolve().parent, input=json.dumps(theta),
+                        stdout=subprocess.PIPE, text=True, check=True,
+                    )
+                    metrics = numeric_map(json.loads(completed.stdout), "simulator metrics")
                 session.add_observation(theta, metrics)
                 loss = session.losses()[-1]
                 row = dict(point, evaluation=index, metrics=metrics, loss=loss)
@@ -83,6 +119,8 @@ def run(problem_path, output):
             if best is None or loss < best["loss"]:
                 best = row
     result = {"evaluations": len(session.observations), "best_observed": best}
+    if config is not None:
+        result["final_recommendation"] = row
     (output / "summary.json").write_text(json.dumps(result, indent=2) + "\n")
     return result
 

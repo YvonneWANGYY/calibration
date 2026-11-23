@@ -51,6 +51,54 @@ acquisition score alongside the measured loss. On successful completion,
 `summary.json` identifies the lowest-loss evaluated point. If the simulator
 fails, completed rows remain available for inspection.
 
+### Tune a neural spline flow with Optuna
+
+Install the tuning dependencies and run the heat simulator from this checkout:
+
+```sh
+python -m pip install '.[tuning]'
+autocalibration run guide/heat/flow-problem.json --output heat-flow-run
+```
+
+In your simulator’s problem file, select `"method": "neural_spline_flow"`.
+The default tuning schedule, `initial`, searches once before the first flow fit.
+Set `"schedule": "every_iteration"` to search before each adaptive proposal.
+Each search minimizes mean held-out negative log-likelihood across shuffled folds.
+Every trial uses the same folds and fits its output normalization on the training
+rows. The final recommendation uses a refit on all observations with the last
+selected settings and consumes one additional simulator evaluation.
+The implementation uses Optuna ([Akiba et al. 2019](https://doi.org/10.1145/3292500.3330701)).
+
+Example fields to add to your existing problem file:
+
+```json
+{
+  "method": "neural_spline_flow",
+  "tuning": {
+    "schedule": "every_iteration",
+    "trials": 8,
+    "folds": 3,
+    "epochs": 30,
+    "members": 3,
+    "search_space": {
+      "layers": [2, 4],
+      "bins": [4, 8],
+      "width": [16, 32],
+      "learning_rate": [0.001, 0.003]
+    }
+  }
+}
+```
+
+Use `initial_samples` to generate a Latin hypercube, or replace that field with
+`"initial_data": "initial.csv"` to reuse completed runs. CSV columns must include
+each parameter name and target ID. The initial dataset must contain at least
+as many rows as folds. Each adaptive round ranks `candidate_pool_size` flow
+draws and sends one parameter set to your simulator. Inspect `flow_history.jsonl`
+for each trial’s settings and validation score, and `summary.json` for the best
+observed result and the separately evaluated final recommendation.
+[Runnable heat problem](guide/heat/flow-problem.json).
+
 ## Reproduce the SAGE results
 
 Version 0.2.0 includes the processed observations and simulation measurements
