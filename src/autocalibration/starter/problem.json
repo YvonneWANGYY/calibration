@@ -1,0 +1,12 @@
+{
+  "parameters": [
+    {"name": "amplitude", "lower": 0.5, "upper": 2.0},
+    {"name": "rate", "lower": 0.1, "upper": 1.0}
+  ],
+  "target": {"signal_t1": 0.8, "signal_t2": 0.5},
+  "simulator": ["{python}", "simulate.py"],
+  "initial_samples": 8,
+  "adaptive_steps": 4,
+  "candidate_pool_size": 256,
+  "seed": 42
+}

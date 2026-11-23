@@ -1,0 +1,173 @@
+{
+  "branch": "equal8",
+  "source_root": "sage_sdss_fixed_trial23_al25_20261117",
+  "parameter_set": "sage-paper8",
+  "theta_keys": [
+    "BaryonFrac_scale",
+    "SfrEfficiency_scale",
+    "Yield_scale",
+    "FeedbackReheatingEpsilon_scale",
+    "FeedbackEjectionEfficiency_scale",
+    "RadioModeEfficiency_scale",
+    "QuasarModeEfficiency_scale",
+    "BlackHoleGrowthRate_scale"
+  ],
+  "theta_transform": {
+    "BaryonFrac_scale": {
+      "high": 1.0,
+      "kind": "linear",
+      "low": 0.0
+    },
+    "BlackHoleGrowthRate_scale": {
+      "kind": "linear",
+      "low": 0.0,
+      "high": 20.0
+    },
+    "FeedbackEjectionEfficiency_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    },
+    "FeedbackReheatingEpsilon_scale": {
+      "kind": "log10",
+      "low": 0.1,
+      "high": 20.0
+    },
+    "QuasarModeEfficiency_scale": {
+      "kind": "linear",
+      "low": 0.0,
+      "high": 20.0
+    },
+    "RadioModeEfficiency_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    },
+    "SfrEfficiency_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    },
+    "Yield_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    }
+  },
+  "target_name": "target_equal8.json",
+  "initial_run_ids": [
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_000",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_001",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_002",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_003",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_004",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_005",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_006",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_007",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_008",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_009",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_010",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_011",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_012",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_013",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_014",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_015",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_016",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_017",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_018",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_019",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_020",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_021",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_022",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_023",
+    "lhs_quasar_bh_sn_shared_seed20261106_20261113_024"
+  ],
+  "initial_seed": 20261106,
+  "initial": 25,
+  "adaptive": 25,
+  "final_simulations": 1,
+  "tuning_trials": 0,
+  "tuning_epochs": 1000,
+  "training_epochs": 1000,
+  "folds": 5,
+  "ensemble_seeds": [
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+  ],
+  "split_seed": 41,
+  "workers": 12,
+  "mpi_ranks": 8,
+  "theta_scaling": "fixed transformed-prior bounds",
+  "baseline_final_r2": 0.651124116355731,
+  "baseline_best_observed_r2": 0.6559474741968133,
+  "family_weights": {
+    "baryonic_tully_fisher": 0.125,
+    "black_hole_bulge_relation": 0.125,
+    "gas_fraction_vs_stellar_mass": 0.125,
+    "mass_metallicity_relation": 0.125,
+    "quenched_fraction_vs_stellar_mass": 0.125,
+    "sfr_density_evolution": 0.125,
+    "stellar_mass_density_evolution": 0.125,
+    "stellar_mass_function": 0.125
+  },
+  "tuned_parameter_names": [
+    "hidden_dim",
+    "num_layers",
+    "lr",
+    "weight_decay",
+    "dropout"
+  ],
+  "fixed_hyperparameters": {
+    "depth": 2,
+    "num_bins": 4
+  },
+  "fixed_settings_source": "best_hyperparams.json",
+  "comparison": "Joint architecture, optimizer, and regularization tuning on initial25 only",
+  "reference_campaign": "sage_equal8_8param_expanded_flow10000_LH25_20261114",
+  "reference_job": "9723.happiness",
+  "changed_factor": "Hyperparameters from fixed-prior SDSS tuning9738 trial23; initial scalar reporting corrected",
+  "independent_prior_fraction": 0.0,
+  "independent_prior_seed": 41,
+  "candidate_pool_size": 10000,
+  "proposal_candidates": 10000,
+  "returned_candidates": 10000,
+  "initial_mode": "lhs_quasar_bh_sn_shared_seed20261106_20261113",
+  "proposal_seed_label": "equal8_sdss_fixed_trial23_20261117",
+  "initial_design": "Reuse validated expanded-range8D LH25 from9355; extract all eight target observables",
+  "initial_source": "quasar_bh_sn_freshLH25_cpu_20261113",
+  "physical_ranges": {
+    "QuasarModeEfficiency": [
+      0,
+      0.1
+    ],
+    "BlackHoleGrowthRate": [
+      0,
+      0.3
+    ],
+    "FeedbackReheatingEpsilon": [
+      0.3,
+      60
+    ]
+  },
+  "comparison_reference_job": "9308.happiness",
+  "initial_source_job": "9355.happiness",
+  "retuned": false
+}

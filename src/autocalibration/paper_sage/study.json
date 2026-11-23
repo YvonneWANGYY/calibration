@@ -1,0 +1,65 @@
+{
+  "five_families": [
+    "baryonic_tully_fisher",
+    "black_hole_bulge_relation",
+    "mass_metallicity_relation",
+    "sfr_density_evolution",
+    "stellar_mass_function"
+  ],
+  "cases": [
+    {
+      "directory": "smf050-free",
+      "series": "SMF50% (8 parameters)",
+      "job": "9356",
+      "rule": "adaptive_and_final",
+      "expected_model": "extended_ranges_LH25_smf050_20261113_crqsf_iter16_000",
+      "original_history_sha256": "7fe6fa9b24ee9edcde74490d76bb3a736730c5dea00a87dcc68231c8ddca7a78",
+      "original_target_sha256": "9c8e0b62103920e2e09bb3a88bb56e755018f53beaf752cdfb43742eb3a4f57b"
+    },
+    {
+      "directory": "smf050-fixed",
+      "series": "SMF50% ($f_b$ fixed)",
+      "job": "9399",
+      "rule": "adaptive_and_final",
+      "expected_model": "expanded_flow5000_7param_smf050_20261114_crqsf_iter22_000",
+      "original_history_sha256": "95e95c6ee4edca8bc9802b1694effb9bf27c9d49ffbc4c43b5c476eab692b668",
+      "original_target_sha256": "9c8e0b62103920e2e09bb3a88bb56e755018f53beaf752cdfb43742eb3a4f57b"
+    },
+    {
+      "directory": "smf080-free",
+      "series": "SMF80% (8 parameters)",
+      "job": "9518",
+      "rule": "adaptive_and_final",
+      "expected_model": "expanded_flow5000_smf080_20261115_crqsf_iter16_000",
+      "original_history_sha256": "f6f7778ba499fd998ce60f1e475c24d7f55fb278e8e04647fe61fe41de8ba50b",
+      "original_target_sha256": "143f3a917390526fecc666475d622d9931d8033b33a1234cbfa95491b406b099"
+    },
+    {
+      "directory": "smf080-fixed",
+      "series": "SMF80% ($f_b$ fixed)",
+      "job": "9400",
+      "rule": "adaptive_and_final",
+      "expected_model": "expanded_flow5000_7param_smf080_20261114_crqsf_iter13_000",
+      "original_history_sha256": "67786f4df7d079c004e055195c813b031c3be4ab816b6ca10dfa415fc33257ab",
+      "original_target_sha256": "143f3a917390526fecc666475d622d9931d8033b33a1234cbfa95491b406b099"
+    },
+    {
+      "directory": "equal8-free",
+      "series": "Eight targets: equal weights",
+      "job": "9739",
+      "rule": "adaptive",
+      "expected_model": "equal8_sdss_fixed_trial23_20261117_crqsf_iter18_000",
+      "original_history_sha256": "3f61149cd60ac40421eb6b001a1fb8f466233a7693dab0b78f212f4692cf8a45",
+      "original_target_sha256": "c1af729ce9950153bda0a8c54c32f5f3c294e3f80e8bbda4f517765472a2e57e"
+    },
+    {
+      "directory": "equal8-fixed",
+      "series": "Eight targets ($f_b$ fixed)",
+      "job": "9821",
+      "rule": "final",
+      "expected_model": "equal8_fb017_sdss_flow5000_20261118_final_mixture_mixture_map_000",
+      "original_history_sha256": "bfb3c1ff1b22cbfa4cc7aebf2a67c6fe1398702a592a56f72542c8e6ed38c68e",
+      "original_target_sha256": "c1af729ce9950153bda0a8c54c32f5f3c294e3f80e8bbda4f517765472a2e57e"
+    }
+  ]
+}

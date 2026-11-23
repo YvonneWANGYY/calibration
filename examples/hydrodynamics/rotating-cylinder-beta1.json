@@ -1,0 +1,72 @@
+{
+  "beta": 1.0,
+  "n_initial": 10,
+  "n_adaptive": 20,
+  "n_final": 1,
+  "lambda_schedule": "-1 to +1 over proposal fits 0..19; independent final refit at fit20 uses lambda=0 and cost disabled",
+  "profile_channels": 3,
+  "training_samples_equal_weight": true,
+  "metric": "RMS of three normalized angular-momentum drifts with equal weights over distinct times; exclude near-duplicate final output",
+  "rf_model": "500 trees; 80th percentile",
+  "bounds": {
+    "min_overdensity": [
+      0.1,
+      100
+    ],
+    "min_shear": [
+      0.01,
+      100
+    ]
+  },
+  "final_rule": "equal-weight ensemble physical-density mode; additional forward test; incumbent comparison only",
+  "validation": {
+    "strategy": "balanced_5fold",
+    "split_seed": 42,
+    "members": 20,
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "members_per_fold": 4,
+    "profile_scaling": "training_fold_only",
+    "scope": "every adaptive fit and final refit"
+  },
+  "reported_models": [
+    {
+      "run_id": "lhs_006",
+      "result": "best_initial",
+      "profile_error": 0.0002275570012053157,
+      "refinement_complexity": 2693609
+    },
+    {
+      "run_id": "crqsf_iter4_000",
+      "result": "best_adaptive",
+      "profile_error": 0.0002775137664337832,
+      "refinement_complexity": 1560098
+    },
+    {
+      "run_id": "rotcyl_final_mixture_mode_000",
+      "result": "final_recommendation",
+      "profile_error": 0.0002653482321211531,
+      "refinement_complexity": 2276947
+    }
+  ]
+}

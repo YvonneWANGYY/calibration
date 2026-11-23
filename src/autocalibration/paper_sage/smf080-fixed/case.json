@@ -1,0 +1,151 @@
+{
+  "branch": "smf080",
+  "source_root": "sage_budget25_al25_kfold5_fixedbf017_20261111_cpu_20261112",
+  "parameter_set": "sage-paper",
+  "theta_keys": [
+    "SfrEfficiency_scale",
+    "Yield_scale",
+    "FeedbackReheatingEpsilon_scale",
+    "FeedbackEjectionEfficiency_scale",
+    "RadioModeEfficiency_scale",
+    "QuasarModeEfficiency_scale",
+    "BlackHoleGrowthRate_scale"
+  ],
+  "theta_transform": {
+    "BlackHoleGrowthRate_scale": {
+      "kind": "linear",
+      "low": 0.0,
+      "high": 20.0
+    },
+    "FeedbackEjectionEfficiency_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    },
+    "FeedbackReheatingEpsilon_scale": {
+      "kind": "log10",
+      "low": 0.1,
+      "high": 20.0
+    },
+    "QuasarModeEfficiency_scale": {
+      "kind": "linear",
+      "low": 0.0,
+      "high": 20.0
+    },
+    "RadioModeEfficiency_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    },
+    "SfrEfficiency_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    },
+    "Yield_scale": {
+      "high": 10.0,
+      "kind": "log10",
+      "low": 0.1
+    }
+  },
+  "target_name": "target_smf080_equalothers.json",
+  "initial_run_ids": [
+    "lhs_sage7_expanded_shared_seed20261106_20261114_000",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_001",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_002",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_003",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_004",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_005",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_006",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_007",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_008",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_009",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_010",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_011",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_012",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_013",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_014",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_015",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_016",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_017",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_018",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_019",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_020",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_021",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_022",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_023",
+    "lhs_sage7_expanded_shared_seed20261106_20261114_024"
+  ],
+  "initial_seed": 20261106,
+  "initial": 25,
+  "adaptive": 25,
+  "final_simulations": 1,
+  "tuning_trials": 0,
+  "tuning_epochs": 1000,
+  "training_epochs": 1000,
+  "folds": 5,
+  "ensemble_seeds": [
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60
+  ],
+  "split_seed": 41,
+  "workers": 12,
+  "mpi_ranks": 8,
+  "theta_scaling": "fixed transformed-prior bounds",
+  "baseline_final_r2": 0.7146202698880428,
+  "baseline_best_observed_r2": 0.862090793776105,
+  "family_weights": {
+    "baryonic_tully_fisher": 0.05,
+    "black_hole_bulge_relation": 0.05,
+    "mass_metallicity_relation": 0.05,
+    "sfr_density_evolution": 0.05,
+    "stellar_mass_function": 0.8
+  },
+  "reference_campaign": "sage_retuned_kfold5_initial25_al25_20261112",
+  "reference_job": "9189.happiness",
+  "changed_factor": "Expanded quasar/BH/SN bounds, fresh LH25, 5000 flow candidates generated and processed",
+  "independent_prior_fraction": 0.0,
+  "independent_prior_seed": 41,
+  "fixed_baryon_fraction": 0.17,
+  "proposal_candidates": 5000,
+  "candidate_pool_size": 5000,
+  "returned_candidates": 5000,
+  "proposal_seed_label": "expanded_flow5000_7param_smf080_20261114",
+  "prior_reference_job": "9232.happiness",
+  "retuned": false,
+  "initial_design": "Fresh shared seven-dimensional LH25 with expanded quasar/BH/SN bounds; BaryonFrac fixed to0.17",
+  "initial_mode": "lhs_sage7_expanded_shared_seed20261106_20261114",
+  "physical_ranges": {
+    "QuasarModeEfficiency": [
+      0,
+      0.1
+    ],
+    "BlackHoleGrowthRate": [
+      0,
+      0.3
+    ],
+    "FeedbackReheatingEpsilon": [
+      0.3,
+      60
+    ]
+  },
+  "shared_initial_root": "sage7_expanded_ranges_flow5000_LH25_20261114"
+}

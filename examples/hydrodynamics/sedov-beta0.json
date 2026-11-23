@@ -1,0 +1,78 @@
+{
+  "beta": 0.0,
+  "initial_count": 5,
+  "active_rounds": 20,
+  "ensemble_size": 20,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61
+  ],
+  "metric_version": "energy_asinh_shock_scale_v1",
+  "validation": "balanced5fold_per_iteration_and_final_refit",
+  "profile_scaling": "per_training_fold",
+  "theta_scaling": "original_shared_all_data",
+  "training_objective": "standard_nll",
+  "cost_surrogate": "rf_upper_quantile",
+  "cost_quantile": 0.8,
+  "simulation_mpi_ranks": 36,
+  "reported_final": {
+    "run_id": "sedov_final_mixture_map_000",
+    "parameters": {
+      "minslope": 0.0225,
+      "minpressurejump": 0.0183,
+      "minenergyratio": 0.0361
+    },
+    "profile_error": 0.2860283738884057,
+    "refinement_complexity": 558284
+  },
+  "initial_design": [
+    {
+      "run_id": "lhs_000",
+      "minslope": 82.0119,
+      "minpressurejump": 238.9056,
+      "minenergyratio": 0.5671
+    },
+    {
+      "run_id": "lhs_001",
+      "minslope": 0.0249,
+      "minpressurejump": 0.0169,
+      "minenergyratio": 0.0284
+    },
+    {
+      "run_id": "lhs_002",
+      "minslope": 8.1001,
+      "minpressurejump": 1.9562,
+      "minenergyratio": 25.2327
+    },
+    {
+      "run_id": "lhs_003",
+      "minslope": 0.2366,
+      "minpressurejump": 29.7774,
+      "minenergyratio": 411.714
+    },
+    {
+      "run_id": "lhs_004",
+      "minslope": 959.6779,
+      "minpressurejump": 0.2794,
+      "minenergyratio": 1.607
+    }
+  ]
+}
