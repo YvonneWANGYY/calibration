@@ -4,19 +4,42 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</title>
 <meta name="description" content="Install autocalibration, define a target profile, and connect a simulator or import completed simulations.">
-<link rel="stylesheet" href="guide/style.css?v=5e66c9d58ad9"></head>
-<body><a class="skip" href="#main">Skip to guide</a><header><div class="bar"><a class="brand" href="./">Calibration for Astrophysics</a><a href="https://github.com/YvonneWANGYY/calibration/tree/v0.2.0">Source · v0.2.0 ↗</a></div></header>
-<div class="layout"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#install">Install</a><a href="#target">Set up the problem</a><a href="#initial">Choose initial data</a><a href="#new">Start from scratch</a><a href="#import">Use existing runs</a><a href="#adapter">Connect a simulator</a><a href="#run-results">Read the results</a><a href="#paper">Reproduce the paper</a><strong class="research-nav">Project</strong><a href="#cases">Case studies</a><a href="#workflow">Research workflow</a><a href="#results">Research results</a><a href="#reproducibility">Resources</a></nav>
-<main id="main"><div class="intro" id="getting-started"><h1>Getting started</h1>
-<p class="lede">Install the software once and define your calibration problem. Then choose how to start: generate a Latin hypercube design or reuse simulations you have already completed.</p></div>
-<section id="install"><h2>Install and create a project</h2><p>Use Python 3.10 or newer and Git. These shell commands install the public release in a virtual environment on Linux or macOS.</p>
+<link rel="stylesheet" href="guide/style.css?v=four-sections-1"></head>
+<body><a class="skip" href="#main">Skip to content</a><header><div class="bar"><a class="brand" href="./">Calibration for Astrophysics</a><a href="https://github.com/YvonneWANGYY/calibration/tree/v0.2.0">Source · v0.2.0 ↗</a></div></header>
+<div class="layout"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#introduction">1. Introduction &amp; SAGE result</a><a href="#reproduce">2. Reproduce the result</a><a href="#your-problem">3. Calibrate your simulator</a><a href="#pipeline">4. Pipeline &amp; tuning</a></nav>
+<main id="main">
+<section id="introduction" class="intro"><h1>Fully Autonomous Calibration for Astrophysics</h1>
+<p class="lede">Which simulation inputs reproduce the measurements you care about? Give the software a target profile and a range for each parameter. It learns from completed simulations and chooses which parameter combination to try next.</p>
+<h2>SAGE matched eight galaxy properties more closely</h2>
+<p>We calibrated the Semi-Analytic Galaxy Evolution (SAGE) model against eight observed galaxy properties, giving each property equal weight. A lower loss means closer overall agreement with observations.</p>
+<table><thead><tr><th scope="col">SAGE model</th><th scope="col">Eight-property loss</th></tr></thead><tbody>
+<tr><td>Fiducial model</td><td>0.128536</td></tr>
+<tr><td>Calibrated, baryon fraction free</td><td>0.104723</td></tr>
+<tr><td>Calibrated, baryon fraction fixed at 0.17</td><td>0.100687</td></tr></tbody></table>
+<p>The two calibrations reduced the fiducial loss by <strong>18.5%</strong> and <strong>21.7%</strong>, respectively. Both brought stellar mass density closer to observations, though both still predicted too few galaxies with little ongoing star formation.</p></section>
+
+<section id="reproduce"><h2 id="paper">Reproduce the SAGE result</h2>
+<p id="getting-started">With Python 3.10 or newer and Git, install the version used for this replay and run the command below. It reads the archived simulation outputs, repeats model selection, and prints the losses for comparison with the table above.</p>
+<pre><code>python -m pip install 'git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'
+autocalibration reproduce-sage</code></pre>
+<p><a href="https://github.com/YvonneWANGYY/calibration/tree/v0.2.0/src/autocalibration/paper_sage">Browse the SAGE targets, configurations, and evaluated models ↗</a></p>
+<details><summary>Try a first round of flow fitting and candidate selection</summary><p>To try the paper’s conditional neural spline flow (NSF), install the flow extra and run the short first-round SAGE example:</p>
+<pre><code>python -m pip install 'fully-autonomous-calibration[flow] @ git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'
+autocalibration propose-sage --smoke --output sage-first-proposal</code></pre><p>This fits 20 ensemble members and ranks 64 draws using the archived SAGE initial design. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.2.0/src/autocalibration/paper_sage">Study data and configurations ↗</a></p></details></section>
+
+<section id="your-problem"><h2>Have a calibration problem?</h2>
+<p>Specify the parameter ranges, the target profile, and how many adaptive rounds to run. A target profile lists the outputs you want to match and their desired values. For a heat simulation, for example, it might give temperatures at three positions along a rod after one minute. Your simulator takes one set of inputs and returns temperatures at those same positions and time.</p>
+<div class="choices" id="initial"><div><h3>I have completed simulations</h3><p>Supply the inputs and outputs from each completed run. They can come from any sampling design. The software uses them to choose the next simulation.</p><a href="#import">Use my existing runs ↓</a></div>
+<div><h3>I need initial simulations</h3><p>Choose how many initial runs you can afford. The software generates a Latin hypercube design within your ranges, evaluates those points with your simulator, and learns from the results.</p><a href="#new">Generate my initial design ↓</a></div></div>
+<p>Both routes use the same installation and simulator connection. Each adaptive round proposes inputs, calls your simulator, and records its outputs. The v0.2.0 local starter uses nearby evaluated points to select candidates. The SAGE example above uses the paper’s flow ensemble.</p>
+<details id="install"><summary>Set up the heat example (both routes)</summary><p>Use Python 3.10 or newer and Git. These shell commands install the public release in a virtual environment on Linux or macOS.</p>
 <pre><code>python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install 'git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'
 mkdir my-problem
 curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/problem.json -o my-problem/problem.json
-curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/simulate.py -o my-problem/simulate.py</code></pre><p>The new directory contains <code>problem.json</code> and a working <code>simulate.py</code>. Run the remaining shell commands from its parent directory.</p></section>
-<section id="target"><h2>Set up the calibration problem</h2><p>Both workflows use the same parameter ranges, target profile, simulator command, and adaptive iteration count in <code>my-problem/problem.json</code>.</p><h3 id="target-profile">What is a target profile?</h3>
+curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/simulate.py -o my-problem/simulate.py</code></pre><p>The new directory contains <code>problem.json</code> and a working <code>simulate.py</code>. Run the remaining shell commands from its parent directory.</p></details>
+<details id="target"><summary>Define parameter ranges and a target profile</summary><p>Both workflows use the same parameter ranges, target profile, simulator command, and adaptive iteration count in <code>my-problem/problem.json</code>.</p><h3 id="target-profile">What is a target profile?</h3>
 <p>A target profile describes what you want the simulator to reproduce. Choose the output you want to match, where to compare it, and the value you want it to take at each point. Use the same reference for every parameter set, whether your first simulations are imported or newly generated.</p>
 <p>In the paper, <var>θ</var> denotes the inputs you can adjust, <var>c</var> is the set of quantities measured in one simulation, and <var>c</var><sub>★</sub> contains their desired values. A completed simulation gives one pair (<var>θ</var>, <var>c</var>). The paper’s conditional neural spline flow (<a href="https://arxiv.org/abs/1906.04032">Durkan et al. 2019</a>) learns from these pairs and proposes new inputs for the desired <var>c</var><sub>★</sub>. A loss then summarizes how closely a completed run matches the reference.</p>
 <h3>Example: how far does heat travel along a rod?</h3>
@@ -60,12 +83,11 @@ curl -fsSL https://yvonnewangyy.github.io/calibration/guide/heat/simulate.py -o 
   &quot;candidate_pool_size&quot;: 256,
   &quot;seed&quot;: 42
 }</code></pre>
-<p><code>adaptive_steps</code> is the number of new adaptive evaluations in either workflow. <code>initial_samples</code> sets the size of a newly generated design. When importing data, the rows in your CSV supply the initial evaluations.</p></section>
-<section id="initial"><h2>Choose your initial data</h2><div class="route"><a href="#new">I need an initial design →</a><a href="#import">I have completed simulations →</a></div></section>
-<section id="new"><h2>Start from scratch</h2><p>Latin hypercube sampling distributes points across the full range of each input by sampling once per stratum (<a href="https://doi.org/10.1080/00401706.1979.10489755">McKay, Beckman &amp; Conover 1979</a>). With the example settings above, eight initial points and four adaptive proposals require twelve simulator calls. It ranks candidates using nearby measured losses and parameter-space distance.</p>
-<pre><code>autocalibration run my-problem/problem.json --output my-run</code></pre>
-<p>Use a fresh output directory for each run. <code>candidate_pool_size</code> controls how many parameter sets are considered per adaptive step. Only the selected set goes to the simulator.</p></section>
-<section id="import"><h2>Use existing simulations</h2><p>Use the Python session API when you already have parameter values and measured outputs. The existing points can come from any design. Include one column for each parameter and one for each target ID. Download the example CSV as <code>initial.csv</code> alongside <code>my-problem/</code>.</p>
+<p><code>adaptive_steps</code> is the number of new adaptive evaluations in either workflow. <code>initial_samples</code> sets the size of a newly generated design. When importing data, the rows in your CSV supply the initial evaluations.</p></details>
+<details id="adapter"><summary>Connect your simulator</summary><p>The adapter is the only model-specific piece. For each evaluation, the runner starts the configured command in the problem directory. The command reads a JSON parameter object on standard input, runs the model, and writes a JSON object of predictions on standard output.</p>
+<h3>Try one evaluation</h3><pre><code>printf '%s\n' '{"diffusivity_cm2_s": 0.04, "heater_c": 80}' | python my-problem/simulate.py</code></pre>
+<p>The example returns approximately <code>{"temp_1cm": 58.896, "temp_3cm": 30.263, "temp_5cm": 21.348}</code>. For your simulator, translate parameters into its native input format, wait for it to finish, and extract a finite value for each target ID. Send logs to standard error and exit with a nonzero status if the simulation fails.</p></details>
+<details id="import"><summary>Start with completed simulations</summary><p>Use the Python session API when you already have parameter values and measured outputs. The existing points can come from any design. Include one column for each parameter and one for each target ID. Download the example CSV as <code>initial.csv</code> alongside <code>my-problem/</code>.</p>
 <p><a href="guide/initial.csv" download>Download initial simulations CSV</a></p>
 <p>Save the following as <code>continue_calibration.py</code> beside the CSV and run <code>python continue_calibration.py</code>. It loads two completed evaluations and runs four new simulations through the same adapter. Append each completed row to the CSV to reuse it next time.</p>
 <pre id="existing"><code>import csv
@@ -103,15 +125,24 @@ with open(&quot;initial.csv&quot;, &quot;a&quot;, newline=&quot;&quot;) as dest:
 losses = session.losses()
 best = losses.index(min(losses))
 print(session.observations[best].parameters, losses[best])</code></pre>
+</details>
+<details id="new"><summary>Start with a Latin hypercube design</summary><p>Latin hypercube sampling distributes points across the full range of each input by sampling once per stratum (<a href="https://doi.org/10.1080/00401706.1979.10489755">McKay, Beckman &amp; Conover 1979</a>). With the example settings above, eight initial points and four adaptive proposals require twelve simulator calls. It ranks candidates using nearby measured losses and parameter-space distance.</p>
+<pre><code>autocalibration run my-problem/problem.json --output my-run</code></pre>
+<p>Use a fresh output directory for each run. <code>candidate_pool_size</code> controls how many parameter sets are considered per adaptive step. Only the selected set goes to the simulator.</p></details>
+<details id="run-results"><summary>Read the evaluated results</summary><p>After a CLI run, inspect <code>my-run/summary.json</code> for the best evaluated parameters, their predictions, and the measured loss. <code>evaluations.jsonl</code> has one record per completed simulation, including those completed before an interruption.</p><p>The local runner sums squared differences across target IDs. If observables have different scales or units, scale predictions and targets consistently before comparing them. The adaptive acquisition score ranks candidates before simulation; the measured loss tells you how well a completed simulation matches the target.</p></details>
 </section>
-<section id="adapter"><h2>Connect your simulator</h2><p>The adapter is the only model-specific piece. For each evaluation, the runner starts the configured command in the problem directory. The command reads a JSON parameter object on standard input, runs the model, and writes a JSON object of predictions on standard output.</p>
-<h3>Try one evaluation</h3><pre><code>printf '%s\n' '{"diffusivity_cm2_s": 0.04, "heater_c": 80}' | python my-problem/simulate.py</code></pre>
-<p>The example returns approximately <code>{"temp_1cm": 58.896, "temp_3cm": 30.263, "temp_5cm": 21.348}</code>. For your simulator, translate parameters into its native input format, wait for it to finish, and extract a finite value for each target ID. Send logs to standard error and exit with a nonzero status if the simulation fails.</p></section>
-<section id="run-results"><h2>Read the results</h2><p>After a CLI run, inspect <code>my-run/summary.json</code> for the best evaluated parameters, their predictions, and the measured loss. <code>evaluations.jsonl</code> has one record per completed simulation, including those completed before an interruption.</p><p>The local runner sums squared differences across target IDs. If observables have different scales or units, scale predictions and targets consistently before comparing them. The adaptive acquisition score ranks candidates before simulation; the measured loss tells you how well a completed simulation matches the target.</p></section>
-<section id="paper"><h2>Reproduce the SAGE paper results</h2><p>The bundled SAGE study has its own commands. Replay the reported model selection and print the five- and eight-observable losses with:</p><pre><code>autocalibration reproduce-sage</code></pre><p>To try the paper’s conditional neural spline flow (NSF), install the flow extra and run the short first-round SAGE example:</p>
-<pre><code>python -m pip install 'fully-autonomous-calibration[flow] @ git+https://github.com/YvonneWANGYY/calibration.git@v0.2.0'
-autocalibration propose-sage --smoke --output sage-first-proposal</code></pre><p>This fits 20 ensemble members and ranks 64 draws using the archived SAGE initial design. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.2.0/src/autocalibration/paper_sage">Study data and configurations ↗</a></p></section>
 
+<section id="pipeline"><h2>The calibration pipeline</h2>
+<figure class="paper-figure"><a href="assets/calibration-workflow.png"><img src="assets/calibration-workflow.png" width="1635" height="942" alt="Completed simulations feed an ensemble of flows. The ensemble draws and ranks candidates, and each new simulation feeds back into training. The lower panel shows how disagreement and optional cost affect ranking."></a><figcaption>Figure 1 from Wang et al. (in preparation). <a href="assets/calibration-workflow.png">View full size ↗</a></figcaption></figure>
+<p>The paper’s method fits an ensemble of neural spline flows to the inputs and outputs of completed simulations. Given the desired outputs, the ensemble draws candidate inputs. The software ranks them, runs the selected candidates, and adds the measured outputs to the next round of training. After the last round, it refits the ensemble and tests its final recommendation in one additional simulation.</p>
+<p>For the selection equations and the cost model, see “Candidate Selection” and “Cost-Aware Candidate Selection” in Wang, Oh, Kim &amp; Jo, <cite>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</cite> (in preparation).</p>
+<h3>What can you tune?</h3>
+<dl class="settings"><dt>Candidate pool size (M)</dt><dd>How many candidate inputs to draw and rank in a round. A larger pool searches more combinations for the same number of simulator calls. In the local starter, set <code>candidate_pool_size</code>.</dd>
+<dt>Adaptive rounds</dt><dd>How many times the search uses new simulation results to choose its next inputs. In the local starter, <code>adaptive_steps</code> adds one simulation per round after the initial design.</dd>
+<dt>Disagreement weight (λ)</dt><dd>The paper varies λ over the run. It starts at −1, rewarding candidates where the fitted flows disagree, and ends at +1, favoring candidates the flows consistently score highly. At zero, the ensemble density alone determines the ranking when cost is disabled.<details><summary>See the λ schedule</summary><p>For round <var>r</var> counting from zero, let <var>p</var> = <var>r</var> / (<var>T</var> − 1), where <var>T</var> is the total number of rounds. The paper uses λ = −1 − (2/3) ln[1 + (e<sup>−3</sup> − 1)<var>p</var>]. A single round uses λ = −1.</p></details></dd>
+<dt>Ensemble size (K)</dt><dd>How many flows are fitted independently at each round. Their spread in scores gives the disagreement used by λ. More members require more fitting time.</dd>
+<dt>Cost weight (β)</dt><dd>When simulation costs vary, a positive β lowers the rank of candidates predicted to be expensive. Set β to zero to rank candidates using density and disagreement alone.</dd></dl>
+<details><summary>Earlier research examples and launcher resources</summary>
     <section id="generic-recipe">
       <div class="section-inner split">
         <div>
@@ -397,8 +428,20 @@ next_runs = session.recommend(n=2, seed=5)</code></pre>
       </div>
     </section>
 
+</details></section>
 </main></div>
 <script>
+function revealSection() {
+  const target = document.getElementById(location.hash.slice(1));
+  if (!target) return;
+  for (let node = target; node; node = node.parentElement) {
+    if (node.tagName === 'DETAILS') node.open = true;
+  }
+  target.scrollIntoView();
+}
+window.addEventListener('hashchange', revealSection);
+revealSection();
+
 if (window.isSecureContext && navigator.clipboard) {
   document.querySelectorAll('pre').forEach(pre => {
     const wrap = document.createElement('div');
