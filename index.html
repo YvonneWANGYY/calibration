@@ -158,7 +158,15 @@ Rotating cylinder: 3,427,030 -&gt; 2,672,995 (22.0% lower)</samp></pre>
 <details><summary>Can simulations run in parallel?</summary><p>The v0.5.2 local CLI waits for one simulator call to finish before choosing the next point. Your adapter can launch a parallel simulator and wait for its result. You can also generate the initial simulations separately in parallel and import their completed rows.</p></details>
 <details><summary>How does this compare with Bayesian optimization or simulation-based inference?</summary><p>Bayesian optimization typically models a scalar objective and uses an acquisition rule to decide where to evaluate it next. Here the flow learns from simulation inputs paired with their output profiles and proposes parameters for a specified target. Both approaches can guide sequential experiments. Simulation-based inference often aims to quantify posterior uncertainty under a prior and an observation model. This workflow uses its density to guide a search and checks its recommendation in the simulator.</p></details>
 <h3 id="cite">Cite the paper and software</h3><p>Wang, Y., Oh, B. K., Kim, J.-h., &amp; Jo, Y. <cite>Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration</cite> (in preparation). For reproducibility, also record the software version and data used. <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.5.2">Software v0.5.2</a> · <a href="https://github.com/YvonneWANGYY/calibration/tree/v0.5.2/src/autocalibration/paper_sage">Archived SAGE data</a>.</p>
-<details><summary>Copy BibTeX</summary><pre><code>@unpublished{wang_autonomous_calibration,
+<p><strong>Archived software.</strong> Yiyang Wang (2026), <cite>YvonneWANGYY/calibration: latest</cite>, Zenodo. This deposit preserves commit <a href="https://github.com/YvonneWANGYY/calibration/commit/fa711897e54e9f6fbf89846917618609402c892f">fa71189</a>. <a href="https://doi.org/10.5281/zenodo.24466513">DOI 10.5281/zenodo.24466513</a>.</p>
+<details><summary>Copy software BibTeX</summary><pre><code>@software{wang_calibration_zenodo,
+  author = {Wang, Yiyang},
+  title = {{YvonneWANGYY/calibration: latest}},
+  year = {2026},
+  publisher = {Zenodo},
+  doi = {10.5281/zenodo.24466513}
+}</code></pre></details>
+<details><summary>Copy manuscript BibTeX</summary><pre><code>@unpublished{wang_autonomous_calibration,
   author = {Wang, Yiyang and Oh, Boon Kiat and Kim, Ji-hoon and Jo, Yongseok},
   title = {Fully Autonomous Calibration for Astrophysics via Adaptive Parameter-Space Exploration},
   year = {2026},
