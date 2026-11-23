@@ -127,15 +127,17 @@ def select(models, target, session, pool_size, weight, final, cost, seed):
                 return (v - v.mean()) / v.std(unbiased=False).clamp_min(1e-8)
             score = standardize(density) - weight * standardize(scores.std(0, unbiased=False))
             if cost and cost["beta"] > 0:
-                from .cost_model import predict_log_ratios
-                ratios, reference = predict_log_ratios(
-                    session, candidates.sigmoid().numpy(), cost["metric"], seed
+                from .cost_model import predict_cost_penalty
+                penalties, reference = predict_cost_penalty(
+                    session, candidates.sigmoid().numpy(), cost, seed
                 )
                 base = score
-                score = base - cost["beta"] * torch.from_numpy(ratios)
+                score = base - cost["beta"] * torch.from_numpy(penalties)
                 selected = int(score.argmax())
+                field = ("predicted_scaled_cost" if cost.get("scale") == "range"
+                         else "predicted_log_cost_ratio")
                 info = {"cost_metric": cost["metric"], "beta": cost["beta"],
-                        "reference_cost": reference, "predicted_log_cost_ratio": ratios[selected].item(),
+                        "reference_cost": reference, field: penalties[selected].item(),
                         "base_score": base[selected].item(), "selection_score": score[selected].item()}
         units = candidates[score.argmax()].sigmoid().tolist()
     return {p.name: _from_unit(p, u) for p, u in zip(session.parameters, units)}, info

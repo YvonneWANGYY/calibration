@@ -19,13 +19,21 @@ def coordinates(units, parameters):
     return values
 
 
-def predict_log_ratios(session, candidate_units, metric, seed):
+def predict_cost_penalty(session, candidate_units, cost, seed):
     rows = session.observations
-    costs = np.array([row.metrics[metric] for row in rows])
+    costs = np.array([row.metrics[cost["metric"]] for row in rows], dtype=np.float64)
     reference = float(costs[np.argmin(session.losses())])
     train = [[to_unit(p, obs.parameters[p.name]) for p in session.parameters] for obs in rows]
     forest = RandomForestRegressor(n_estimators=500, random_state=seed, n_jobs=1)
-    forest.fit(coordinates(train, session.parameters), np.log(costs) - np.log(reference))
+    if cost.get("scale") == "range":
+        # Rescale before subtracting so opposite-sign finite inputs cannot overflow.
+        magnitude = np.max(np.abs(costs))
+        scaled = costs / magnitude if magnitude else costs
+        span = np.ptp(scaled)
+        response = (scaled - np.min(scaled)) / span if span else np.zeros_like(costs)
+    else:
+        response = np.log(costs) - np.log(reference)
+    forest.fit(coordinates(train, session.parameters), response)
     candidates = coordinates(candidate_units, session.parameters)
     prediction = np.empty(len(candidates))
     for start in range(0, len(candidates), 2048):

@@ -29,6 +29,8 @@ if __name__ == "__main__":
     parameters = json.load(sys.stdin)
     profile = temperature_profile(**parameters)
     outputs = {f"temp_{x}cm": profile[x * 10] for x in (1, 3, 5)}
-    if "--report-cost" in sys.argv[1:]:
+    if "--scalar-cost" in sys.argv[1:]:
+        outputs["cost"] = integration_steps(parameters["diffusivity_cm2_s"])
+    elif "--report-cost" in sys.argv[1:]:
         outputs["solver_steps"] = integration_steps(parameters["diffusivity_cm2_s"])
     print(json.dumps(outputs))

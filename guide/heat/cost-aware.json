@@ -19,7 +19,7 @@
   "simulator": [
     "{python}",
     "simulate.py",
-    "--report-cost"
+    "--scalar-cost"
   ],
   "initial_samples": 8,
   "adaptive_steps": 4,
@@ -32,9 +32,5 @@
     "folds": 2,
     "epochs": 10,
     "members": 3
-  },
-  "cost": {
-    "metric": "solver_steps",
-    "beta": 0.1
   }
 }

@@ -4,7 +4,7 @@ import math
 
 
 def cost_settings(problem, session):
-    if "cost" not in problem:
+    if "cost" not in problem or problem["cost"] is False:
         return None
     cost = problem["cost"]
     if not isinstance(cost, dict) or set(cost) != {"metric", "beta"}:
@@ -23,5 +23,7 @@ def cost_settings(problem, session):
 
 
 def check_cost(metrics, cost):
-    if cost and (cost["metric"] not in metrics or metrics[cost["metric"]] <= 0):
+    if cost and cost["metric"] not in metrics:
+        raise ValueError(f"missing cost field {cost['metric']!r}")
+    if cost and cost.get("scale") != "range" and metrics[cost["metric"]] <= 0:
         raise ValueError(f"expected a positive measured cost in {cost['metric']!r}")

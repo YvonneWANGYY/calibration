@@ -1,6 +1,7 @@
 """Create and run local calibration projects."""
 
 import argparse
+import csv
 import json
 import math
 import shutil
@@ -76,13 +77,21 @@ def run(problem_path, output):
     problem, session = read_problem(problem_path)
     command = [sys.executable if arg == "{python}" else arg for arg in problem["simulator"]]
     cost = cost_settings(problem, session)
+    auto_cost = (problem.get("method") == "neural_spline_flow" and "cost" not in problem
+                 and "cost" not in session.target_profile
+                 and all(p.name != "cost" for p in session.parameters))
     columns = list(session.target_profile)
     if cost:
         columns.append(cost["metric"])
     imported = []
     if "initial_data" in problem:
         from .io import load_observations
-        imported = load_observations(problem_path.parent / problem["initial_data"],
+        source = problem_path.parent / problem["initial_data"]
+        if auto_cost and source.suffix.lower() == ".csv":
+            with source.open(newline="") as stream:
+                if "cost" in next(csv.reader(stream), []):
+                    columns.append("cost")
+        imported = load_observations(source,
                                      [p.name for p in session.parameters], columns)
         if not imported:
             raise ValueError("initial_data contains no observations")
@@ -102,9 +111,12 @@ def run(problem_path, output):
         raise ValueError("select method neural_spline_flow to use tuning")
     output.mkdir(parents=True, exist_ok=False)
     (output / "problem.json").write_text(json.dumps(problem, indent=2) + "\n")
+    # Keep the archived problem file as supplied. The first response establishes
+    # whether this flow run carries a scalar cost.
+    runtime = dict(problem, cost=cost)
     best = None
     with (output / "evaluations.jsonl").open("w") as history:
-        for index, point in enumerate(proposals(session, problem, output, imported, config), start=1):
+        for index, point in enumerate(proposals(session, runtime, output, imported, config), start=1):
             theta = point["parameters"]
             try:
                 if point["kind"] == "imported":
@@ -115,6 +127,11 @@ def run(problem_path, output):
                         stdout=subprocess.PIPE, text=True, check=True,
                     )
                     metrics = numeric_map(json.loads(completed.stdout), "simulator metrics")
+                if auto_cost and "cost" in metrics and cost is None:
+                    if index != 1:
+                        raise ValueError("supply cost from the first evaluation, including imported runs")
+                    cost = {"metric": "cost", "beta": 0.1, "scale": "range"}
+                    runtime["cost"] = cost
                 check_cost(metrics, cost)
                 session.add_observation(theta, metrics)
                 loss = session.losses()[-1]

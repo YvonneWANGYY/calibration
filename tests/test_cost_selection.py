@@ -32,7 +32,8 @@ class CostSelectionTests(unittest.TestCase):
                     return [json.loads(s) for s in (out / filename).read_text().splitlines()]
                 return rows("evaluations.jsonl"), rows("flow_history.jsonl")
 
-            config["cost"]["beta"] = 0
+            config["simulator"][-1] = "--report-cost"
+            config["cost"] = {"metric": "solver_steps", "beta": 0}
             zero, _ = run("zero")
             cost = config.pop("cost")
             ordinary, _ = run("ordinary")
@@ -49,6 +50,12 @@ class CostSelectionTests(unittest.TestCase):
             for row in expensive:
                 expected = sum((row["metrics"][k] - target)**2 for k,target in config["target"].items())
                 self.assertAlmostEqual(row["loss"], expected)
+            # Reuse the same design with user-assigned scores, including zero
+            # and negatives. Newly evaluated rows carry the same field.
+            del config["cost"]
+            config["simulator"][-1] = "--scalar-cost"
+            scalar, scalar_fits = run("scalar")
+            self.assertIn("predicted_scaled_cost", scalar_fits[0]["acquisition"])
             import csv
             keys = list(expensive[0]["parameters"]) + list(config["target"]) + ["solver_steps"]
             with (root / "initial.csv").open("w", newline="") as stream:
@@ -58,8 +65,21 @@ class CostSelectionTests(unittest.TestCase):
                     writer.writerow(row["parameters"] | row["metrics"])
             del config["initial_samples"]
             config["initial_data"] = "initial.csv"
+            config["cost"] = dict(cost, beta=100)
+            config["simulator"][-1] = "--report-cost"
             imported, _ = run("imported")
             self.assertEqual([r["parameters"] for r in expensive], [r["parameters"] for r in imported])
+
+            del config["cost"]
+            config["simulator"][-1] = "--scalar-cost"
+            with (root / "initial.csv").open("w", newline="") as stream:
+                writer = csv.DictWriter(stream, keys[:-1] + ["cost"])
+                writer.writeheader()
+                for i, row in enumerate(scalar[:4]):
+                    writer.writerow(row["parameters"] | row["metrics"] | {"cost": i - 2})
+            imported_scalar, audit = run("imported-scalar")
+            self.assertEqual([r["metrics"]["cost"] for r in imported_scalar[:4]], [-2,-1,0,1])
+            self.assertIn("predicted_scaled_cost", audit[0]["acquisition"])
 
     def test_cost_changes_winner_of_a_fixed_pool(self):
         sys.path.insert(0, str(ROOT / "src"))
@@ -86,3 +106,13 @@ class CostSelectionTests(unittest.TestCase):
         self.assertEqual(audit["reference_cost"], 100)
         final, _ = select(*args, True, {"metric": "work", "beta": 100}, 42)
         self.assertEqual(final, high)
+        scalar = {"metric": "score", "beta": 10, "scale": "range"}
+        for obs in session.observations:
+            obs.metrics["score"] = -3 if obs.parameters["x"] < 0.5 else 0
+        cheaper, audit = select(*args, False, scalar, 42)
+        self.assertEqual(cheaper, low)
+        for obs in session.observations:
+            obs.metrics["score"] = -3
+        tied, audit = select(*args, False, scalar, 42)
+        self.assertEqual(tied, high)
+        self.assertEqual(audit["predicted_scaled_cost"], 0)

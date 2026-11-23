@@ -101,18 +101,22 @@ observed result and the separately evaluated final recommendation.
 
 ### Include computational cost in flow selection
 
-Run `autocalibration run guide/heat/cost-aware.json --output from-cost` after
-installing `.[tuning]`. To enable this in your own flow problem, set
-`"cost": {"metric": "solver_steps", "beta": 0.1}`. Return a finite, positive
-cost under this name for every evaluation and include it in imported data.
-Use a separate name from the targets and parameters. A 500-tree random forest
-predicts the 80th percentile of tree predictions for the log cost ratio relative
-to the lowest-loss observation. Adaptive ranking subtracts beta times that
-prediction. The model uses log coordinates on strictly positive parameter
-ranges and linear coordinates otherwise. Beta zero records costs with ordinary
-selection. The simulator loss and final density ranking are independent of
-the penalty. Inspect measured costs in `evaluations.jsonl` and the adaptive
-score components in `flow_history.jsonl`.
+For each evaluated parameter choice, supply one extra numeric output named
+`cost`. You define its meaning. Larger means more expensive. For example,
+`{"response": 0.85, "cost": 7}` assigns a cost of 7 to that run. Include
+a `cost` column for imported simulations. Supply it consistently from the
+first evaluation, separately from target and parameter names. The flow runner
+detects it automatically. Scores can be zero or negative. The runner rescales
+them to the observed range and uses a default penalty weight of 0.1. Set
+`"cost": false` to disable the penalty. Run the example with
+`autocalibration run guide/heat/cost-aware.json --output from-cost`.
+
+For the paper’s positive-cost log-ratio rule, use an explicit config such as
+`"cost": {"metric": "solver_steps", "beta": 0.1}`. Both modes use 500 trees
+and the 80th percentile of tree predictions during adaptive ranking.
+Raw costs remain in `evaluations.jsonl`, and score components in
+`flow_history.jsonl`. Target loss and the final density ranking are separate
+from the cost penalty.
 
 ## Reproduce the SAGE results
 
